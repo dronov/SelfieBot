@@ -1,4 +1,4 @@
-//servo v. 0.1
+
 #include <SoftwareSerial.h>
 #include <Servo.h>
 #define RX 3   
