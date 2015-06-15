@@ -1,4 +1,3 @@
-
 #include <SoftwareSerial.h>
 #include <Servo.h>
 #define RX 3   
@@ -52,10 +51,13 @@ void setup() {
   P2.ang=STRTANG;
   servo1.write(P1.ang);
   servo2.write(P2.ang);
+  delay(2000);
+  servo1.detach();
+  servo2.detach();
 }
  
 void loop() {
-  digitalWrite(LED,0);
+  digitalWrite(LED,1);
 /*Если идет прием байтов, то проверяем, входят ли они в диапазон 
 назначенных за управление байтов. В зависимости от этого будем либо
 изменять направление поворота(или останавливать), либо же никакие 
@@ -63,9 +65,10 @@ void loop() {
   if (myser.available() > 0)
   {  
      incomingbyte = myser.read(); // считываем байт
-     if (prov(&P1,incomingbyte));  //проверяем, входит ли в диапазон разрешенных байт первого сервопривода
-       else  
-         prov(&P2,incomingbyte);  //-||- второго сервопривода
+     if (prov(&P1,incomingbyte))  //проверяем, входит ли в диапазон разрешенных байт первого сервопривода
+       servo1.attach(S1P);
+     if(prov(&P2,incomingbyte)) //-||- второго сервопривода
+         servo2.attach(S2P);
   }
 //Если поворот серовприводов разрешен, то оцениваем направление поворота 
   if(P1.ex)
@@ -80,8 +83,14 @@ void loop() {
             P1.ang+=1;
             servo1.write(P1.ang);
           }
-      else P1.ex=0;  //Иные случаи- запрет на поворот
+      else
+     { P1.ex=0;  //Иные случаи- запрет на поворот
+      servo1.detach();
+     }
   }
+    else
+      servo1.detach();  
+
   if(P2.ex)
   {
       if(P2.bt==P2.mas[0]&&P2.ang>MINANG)
@@ -94,29 +103,38 @@ void loop() {
          P2.ang+=1;
         servo2.write(P2.ang);
       }
-      else P2.ex=0;
+      else 
+      {
+        P2.ex=0;
+        servo2.detach();
+      }
   }
+  else
+    servo2.detach();
   
-  delay(50);
+  
+  delay(25);
 }
     
 int prov(struct Vect *p, char c)
 {
   if((p->mas[0]==c)||p->mas[1]==c)  //если байт входит в диапозон 
   {
-    if(c==p->bt)  //если до этого данный байт был нажат
+    if(c==(p->bt))  //если до этого данный байт был нажат
     {
       //то даем команды к запрету поворота
       p->ex=0;  //запрет поворота
       p->bt=0;  //обнуляем запомненный байт
+      return 0;
     }
     else
     {
       //иначе разрешаем поворот и запоминаем байт
       p->ex=1;
       p->bt=c;
+      return 1;
     }
-    return 1;
   }
-  return 0;
+  else
+    return -1;
 }
