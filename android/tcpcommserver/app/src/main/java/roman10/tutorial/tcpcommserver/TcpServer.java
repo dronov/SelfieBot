@@ -8,12 +8,14 @@ import java.io.InterruptedIOException;
 import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketAddress;
 
 import android.app.Activity;
-import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class TcpServer extends Activity {
     /** Called when the activity is first created. */
@@ -22,41 +24,31 @@ public class TcpServer extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         textDisplay = (TextView) this.findViewById(R.id.text1);
-
-        textDisplay.setText("Server waiting for connection");
-		//ss.setSoTimeout(10000);
-		//accept connections
-        runTcpServerAsService();
-		finish();
+        textDisplay.setText("Server waiting for connections");
+        mt = new MyTask();
+        mt.execute();
+        finish();
     }
     private TextView textDisplay;
-	private void runTcpServerAsService() {
-		Intent lIntent = new Intent(this.getApplicationContext(), TcpServerAsService.class);
-		this.startService(lIntent);
-	}
+    private static final int TCP_SERVER_PORT = 21111;
+    MyTask mt;
+    ServerSocket ss = null;
     private void runTcpServer() {
-    	ServerSocket ss = null;
+
     	try {
-			ss = new ServerSocket(TcpServerAsService.TCP_SERVER_PORT);
-			//ss.setSoTimeout(10000);
+			ss = new ServerSocket(TCP_SERVER_PORT);
 			//accept connections
 			Socket s = ss.accept();
 			BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
 			BufferedWriter out = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
 			//receive a message
-			String incomingMsg = in.readLine();
+			String incomingMsg = in.readLine() + System.getProperty("line.separator");
 			Log.i("TcpServer", "received: " + incomingMsg);
-			textDisplay.append("received: " + incomingMsg);
 			//send a message
-			String outgoingMsg =
-					"goodbye from port " +
-							TcpServerAsService.TCP_SERVER_PORT +
-							System.getProperty("line.separator");
+			String outgoingMsg = "goodbye from port " + TCP_SERVER_PORT + System.getProperty("line.separator");
 			out.write(outgoingMsg);
 			out.flush();
 			Log.i("TcpServer", "sent: " + outgoingMsg);
-			textDisplay.append("sent: " + outgoingMsg);
-			//SystemClock.sleep(5000);
 			s.close();
 		} catch (InterruptedIOException e) {
 			//if timeout occurs
@@ -72,5 +64,15 @@ public class TcpServer extends Activity {
 				}
 			}
 		}
+
     }
+	class MyTask extends AsyncTask<Void,Void,Void>{
+		@Override
+		protected Void doInBackground(Void... voids) {
+            while(true){
+			    runTcpServer();
+            }
+//			return null;
+		}
+	}
 }

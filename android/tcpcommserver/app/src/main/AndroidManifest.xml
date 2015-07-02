@@ -6,35 +6,19 @@
 
     <uses-sdk android:minSdkVersion="4" />
 
-    <uses-permission android:name="android.permission.INTERNET" />
-
-    <android:uses-permission
-        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="18" />
-    <android:uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <android:uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="18" />
-
     <application
-        android:debuggable="true"
         android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name" >
+        android:label="@string/app_name"
+        android:debuggable="true" >
         <activity
-            android:name=".TcpServer"
-            android:label="@string/app_name" >
-            <intent-filter>
+            android:label="@string/app_name"
+            android:name=".TcpServer" >
+            <intent-filter >
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <service
-            android:name=".TcpServerAsService"
-            android:enabled="true"
-            android:exported="true" >
-        </service>
     </application>
-
+	<uses-permission android:name="android.permission.INTERNET"/>
 </manifest>
