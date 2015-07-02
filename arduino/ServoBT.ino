@@ -1,12 +1,17 @@
+
 #include <SoftwareSerial.h>
 #include <Servo.h>
-#define RX 3   
-#define TX 6
-#define S1P 10  //порт управления первым сервоприводом
-#define S2P 11  //-||- вторым сервоприводом
+#define RX 3  //(analog)   
+#define TX 5  //(analog)
+#define BTN 8   //порт считывания сигнала кнопки(digit)
+#define S1P 10  //порт управления первым сервоприводом(up/down)(analog)
+#define S2P 11  //-||- вторым сервоприводом(analog)
 #define MXANG 180  //максимальный угол поворота
 #define MINANG 0  //минимальный угол поворота
 #define STRTANG 90  //стартовый угол
+
+/*Изначально включаем питание для микроконтроллера. Серовоприводы остаются выключенными.
+Кнопка нажимется- сервоприводы встают в базовое положение. Вновь нажатие- контроль за ними прерывается/*
 
 /*Допускается 4 распознаваемых байта, соответствующих '7,'9','1','0';
 При первом получении определенного байта он запоминается, дается допуск к повороту и совершается сам поворот.
@@ -26,115 +31,129 @@ struct Vect
     int bt;  //принятый байт(код клавиши)
     int ex;  //допуск поворота
     int ang;  //имеющийся угол поворота
+
 }P1,P2;  //вектора для серовприводов 1(влево-вправо) и 2(вверх-вниз)
 
 char incomingbyte;  
 int  LED = 13;       
-
+int delta;
+int i;  //флаг нажатия кнопки
 int prov( struct Vect *, char);  //функция проверки допустимости входного байта для сервоприводов
 
 void setup() {
   
-  P1.mas[0]='7';
-  P1.mas[1]='9';
-  P2.mas[0]='1';
-  P2.mas[1]='0';
+  P1.mas[0]='w';
+  P1.mas[1]='s';
+  P2.mas[0]='d';
+  P2.mas[1]='a';
   P1.bt=P1.ex=0;
   P2.bt=P2.ex=0;
-  
+  delta=2;
   myser.begin(9600);
   pinMode(LED, OUTPUT);
-  
-  servo1.attach(S1P);
-  servo2.attach(S2P);
-  P1.ang=STRTANG;
-  P2.ang=STRTANG;
-  servo1.write(P1.ang);
-  servo2.write(P2.ang);
-  delay(2000);
-  servo1.detach();
-  servo2.detach();
+  pinMode(BTN, OUTPUT);
+  i=0;  //0- флаг указывает на то, что сервы не управляются. Иначе флаг равен 1.
 }
  
 void loop() {
-  digitalWrite(LED,1);
-/*Если идет прием байтов, то проверяем, входят ли они в диапазон 
+  if(i==0)  
+    {
+      servo1.detach(); 
+      servo2.detach();
+      P2.bt=P1.ex=0;
+      P2.bt=P2.ex=0;
+      digitalWrite(LED,0);  
+    }
+  else
+    {
+      servo1.attach(S1P);
+      servo2.attach(S2P);
+      P1.ang=STRTANG;
+      P2.ang=STRTANG;
+      servo1.write(P1.ang);
+      servo2.write(P2.ang);
+      myser.flush();
+      digitalWrite(LED,1);
+    }
+    /*Если идет прием байтов, то проверяем, входят ли они в диапазон 
 назначенных за управление байтов. В зависимости от этого будем либо
 изменять направление поворота(или останавливать), либо же никакие 
 действия производить не будем*/
+  while(i==1)
+  {
   if (myser.available() > 0)
   {  
-     incomingbyte = myser.read(); // считываем байт
-     if (prov(&P1,incomingbyte))  //проверяем, входит ли в диапазон разрешенных байт первого сервопривода
-       servo1.attach(S1P);
-     if(prov(&P2,incomingbyte)) //-||- второго сервопривода
-         servo2.attach(S2P);
+    incomingbyte = myser.read(); // считываем байт
+    myser.println(incomingbyte, DEC);
+    myser.println("dsds");
+    myser.println(digitalRead(BTN));
+     if (prov(&P1,incomingbyte));  //проверяем, входит ли в диапазон разрешенных байт первого сервопривода
+       else  
+         prov(&P2,incomingbyte);  //-||- второго сервопривода
   }
 //Если поворот серовприводов разрешен, то оцениваем направление поворота 
   if(P1.ex)
   {
-      if(P1.bt==P1.mas[0]&&P1.ang>MINANG)  //если поворот против часовой стрелки и угол больше 0  
+      if(P1.bt==P1.mas[0]&&P1.ang>MINANG+50)  //если поворот против часовой стрелки и угол больше 0  
           {
-            P1.ang-=1;  
+            P1.ang-=delta;  
             servo1.write(P1.ang);
           }
-      else if(P1.bt==P1.mas[1]&&P1.ang<MXANG)  //если по часовой и угол меньше 180
+      else if(P1.bt==P1.mas[1]&&P1.ang<MXANG-20)  //если по часовой и угол меньше 180
           {
-            P1.ang+=1;
+            P1.ang+=delta;
             servo1.write(P1.ang);
           }
-      else
-     { P1.ex=0;  //Иные случаи- запрет на поворот
-      servo1.detach();
-     }
+      else P1.ex=0;  //Иные случаи- запрет на поворот
   }
-    else
-      servo1.detach();  
-
   if(P2.ex)
   {
-      if(P2.bt==P2.mas[0]&&P2.ang>MINANG)
+      if(P2.bt==P2.mas[0]&&P2.ang>MINANG+20)
       {
-        P2.ang-=1;
+        P2.ang-=delta;
         servo2.write(P2.ang);
       }
-      else if(P2.bt==P2.mas[1]&&P2.ang<MXANG)
+      else if(P2.bt==P2.mas[1]&&P2.ang<MXANG-20)
       {
-         P2.ang+=1;
+         P2.ang+=delta;
         servo2.write(P2.ang);
       }
-      else 
-      {
-        P2.ex=0;
-        servo2.detach();
-      }
-  }
-  else
-    servo2.detach();
+      else P2.ex=0;
   
-  
+  } 
   delay(25);
+  //если нажимаем кнопку
+  if (digitalRead(BTN)==1)
+  {
+      i=0;
+      while(digitalRead(BTN)==1);  //ждем до отпуска кнопки
+  }
+    }
+      if (digitalRead(BTN)==1&&i==0)  //если повторно нажали(следим за этим условием i==0)
+      {
+        i=1;
+        while(digitalRead(BTN)==1);
+      }
+      
 }
     
 int prov(struct Vect *p, char c)
 {
   if((p->mas[0]==c)||p->mas[1]==c)  //если байт входит в диапозон 
   {
-    if(c==(p->bt))  //если до этого данный байт был нажат
+    if(c==p->bt)  //если до этого данный байт был нажат
     {
       //то даем команды к запрету поворота
       p->ex=0;  //запрет поворота
       p->bt=0;  //обнуляем запомненный байт
-      return 0;
     }
     else
     {
       //иначе разрешаем поворот и запоминаем байт
       p->ex=1;
       p->bt=c;
-      return 1;
     }
+    return 1;
   }
-  else
-    return -1;
+  return 0;
 }
