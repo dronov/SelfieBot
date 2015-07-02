@@ -1,4 +1,0 @@
-We are using Arduino pro mini with PL2303 USB-UART programmer. So Aruino pro mini doesnt have connection with PL2303 through "reset",
-so you must push it in right moment yourself. Here is two videos how to upload code in it:
-http://www.youtube.com/watch?v=jk-uq3dlvKs
-http://www.youtube.com/watch?v=HdtREFxLeZg
