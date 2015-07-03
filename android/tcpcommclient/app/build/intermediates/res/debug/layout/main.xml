@@ -10,4 +10,4 @@
         android:layout_height="wrap_content"
         android:text="@string/hello" />
 
-</LinearLayout><!-- From: file:/home/ilya/AndroidStudioProjects/tcpcommclient/app/src/main/res/layout/main.xml -->
+</LinearLayout><!-- From: file:/home/ilya/servo/android/tcpcommclient/app/src/main/res/layout/main.xml -->

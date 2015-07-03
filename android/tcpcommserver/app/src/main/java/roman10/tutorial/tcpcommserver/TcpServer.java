@@ -1,14 +1,12 @@
 package roman10.tutorial.tcpcommserver;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
-import java.io.OutputStreamWriter;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketAddress;
+import java.net.SocketException;
 
 import android.app.Activity;
 import android.os.AsyncTask;
@@ -30,49 +28,69 @@ public class TcpServer extends Activity {
         finish();
     }
     private TextView textDisplay;
-    private static final int TCP_SERVER_PORT = 21111;
+    private static final int TCP_SERVER_PORT = 1553;
     MyTask mt;
     ServerSocket ss = null;
+	Socket s = null;
+	byte inMsg[] = new byte[5];
+	byte outMsg[] = new byte[5];
     private void runTcpServer() {
-
     	try {
-			ss = new ServerSocket(TCP_SERVER_PORT);
-			//accept connections
-			Socket s = ss.accept();
-			BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
-			BufferedWriter out = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
-			//receive a message
-			String incomingMsg = in.readLine() + System.getProperty("line.separator");
-			Log.i("TcpServer", "received: " + incomingMsg);
-			//send a message
-			String outgoingMsg = "goodbye from port " + TCP_SERVER_PORT + System.getProperty("line.separator");
-			out.write(outgoingMsg);
-			out.flush();
-			Log.i("TcpServer", "sent: " + outgoingMsg);
-			s.close();
+			while (true){
+				s.getInputStream().read(inMsg);
+				Log.i("TcpServer", "received: " + inMsg[0]);
+				outMsg[0] = 's';
+				s.getOutputStream().write(outMsg);
+				Log.i("TcpServer", "sent: " + outMsg[0]);
+//				if(outMsg[0] == -1) break;
+			}
 		} catch (InterruptedIOException e) {
 			//if timeout occurs
 			e.printStackTrace();
-    	} catch (IOException e) {
+    	} catch (SocketException se){
+            se.printStackTrace();
+			Log.i("TcpServer", "client cuts wire!!! ");
+        } catch (IOException e) {
 			e.printStackTrace();
-		} finally {
-			if (ss != null) {
-				try {
-					ss.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+		}
+    }
+	class MyTask extends AsyncTask<Void, Void, Void> {
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			try {
+				ss = new ServerSocket(TCP_SERVER_PORT);
+
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
+			Log.i("TcpServer", "Server started");
+			Toast.makeText(getApplicationContext(),
+					"Server started on port: "+TCP_SERVER_PORT,Toast.LENGTH_SHORT).show();
 		}
 
-    }
-	class MyTask extends AsyncTask<Void,Void,Void>{
 		@Override
 		protected Void doInBackground(Void... voids) {
-            while(true){
-			    runTcpServer();
-            }
-//			return null;
+			try {
+				s = ss.accept();
+				runTcpServer();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
+		@Override
+		protected void onPostExecute(Void aVoid) {
+			super.onPostExecute(aVoid);
+			try {
+				s.close();
+				ss.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			Log.i("TcpServer", "Server closed");
+			Toast.makeText(getApplicationContext(),
+					"Server closed on port: " + TCP_SERVER_PORT, Toast.LENGTH_SHORT).show();
 		}
 	}
 }
