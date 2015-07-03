@@ -5,7 +5,7 @@ android {
     buildToolsVersion "22.0.1"
 
     defaultConfig {
-        applicationId "roman10.tutorial.tcpcommserver"
+        applicationId "com.endurancerobots.headcontrolserver"
         minSdkVersion 4
         targetSdkVersion 4
     }

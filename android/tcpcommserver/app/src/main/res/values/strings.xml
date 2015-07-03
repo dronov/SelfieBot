@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="hello">Hello World, TcpServer!</string>
-    <string name="app_name">Tcpcommserver</string>
+    <string name="hello">Now you can connect to me</string>
+    <string name="app_name">Head Control (Server)</string>
 
 </resources>

@@ -8,8 +8,8 @@
         <option name="gradleJvm" value="1.7" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/app" />
+            <option value="$USER_HOME$/servo/android/tcpcommclient" />
+            <option value="$USER_HOME$/servo/android/tcpcommclient/app" />
           </set>
         </option>
       </GradleProjectSettings>

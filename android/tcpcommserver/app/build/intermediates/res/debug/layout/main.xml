@@ -2,12 +2,33 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical" >
+    android:orientation="vertical"
+    android:weightSum="1"
+    android:background="#ffffffff">
 
     <TextView
         android:id="@+id/text1"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/hello" />
+
+    <ImageView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageView"
+        android:layout_gravity="center_horizontal"
+        android:src="@mipmap/ic_launcher"
+        android:layout_weight="0.71" />
+
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Run in Background"
+        android:id="@+id/buttonBackground"
+        android:onClick="buttonBackgroundOnClick"
+        android:layout_weight="0.13"
+        android:background="#ff3b4cff"
+        android:clickable="true"
+        android:textColor="#ffffffff" />
 
 </LinearLayout><!-- From: file:/home/ilya/servo/android/tcpcommserver/app/src/main/res/layout/main.xml -->

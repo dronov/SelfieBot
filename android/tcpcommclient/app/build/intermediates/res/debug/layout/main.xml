@@ -1,13 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical" >
+    android:baselineAligned="false"
+    android:background="#ffffffff">
 
-    <TextView
-        android:id="@+id/text1"
+
+    <ImageView
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/hello" />
+        android:layout_height="fill_parent"
+        android:id="@+id/imageView"
+        android:layout_below="@+id/buttonConnect"
+        android:layout_alignRight="@+id/bRight"
+        android:src="@drawable/edur_short_logo"
+        android:layout_above="@+id/bUp" />
 
-</LinearLayout><!-- From: file:/home/ilya/servo/android/tcpcommclient/app/src/main/res/layout/main.xml -->
+    <Button
+        android:layout_width="@dimen/button_width"
+        android:layout_height="@dimen/button_height"
+        android:text="Left"
+        android:id="@+id/bLeft"
+        android:onClick="buttonLeftOnClick"
+        android:layout_alignBaseline="@+id/bDown"
+        android:layout_alignBottom="@+id/bDown"
+        android:layout_alignParentLeft="true" />
+
+    <Button
+        android:layout_width="@dimen/button_width"
+        android:layout_height="@dimen/button_height"
+        android:text="Right"
+        android:id="@+id/bRight"
+        android:layout_alignTop="@+id/bLeft"
+        android:layout_alignParentRight="true"
+        android:onClick="buttonRightOnClick"/>
+
+    <Button
+        android:layout_width="@dimen/button_width"
+        android:layout_height="@dimen/button_height"
+        android:text="@string/Up"
+        android:id="@+id/bUp"
+        android:onClick="buttonUpOnClick"
+        android:layout_above="@+id/bDown"
+        android:layout_alignLeft="@+id/bDown" />
+
+    <Button
+        android:layout_width="@dimen/button_width"
+        android:layout_height="@dimen/button_height"
+        android:text="Down"
+        android:id="@+id/bDown"
+        android:onClick="buttonDownOnClick"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/editHeadIp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentLeft="true"
+        android:hint="@string/ipHint"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/connect"
+        android:id="@+id/buttonConnect"
+        android:layout_below="@id/editHeadIp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:textStyle="bold"
+        android:onClick="connectClick"/>
+
+</RelativeLayout><!-- From: file:/home/ilya/servo/android/tcpcommclient/app/src/main/res/layout/main.xml -->

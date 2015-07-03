@@ -30,7 +30,7 @@ ADDED from AndroidManifest.xml:9:5
 		ADDED from AndroidManifest.xml:12:9
 	android:icon
 		ADDED from AndroidManifest.xml:10:9
-activity#roman10.tutorial.tcpcommclient.TcpClient
+activity#com.endurancerobots.headcontrolclient.TcpClient
 ADDED from AndroidManifest.xml:13:9
 	android:label
 		ADDED from AndroidManifest.xml:14:13
@@ -46,7 +46,7 @@ category#android.intent.category.LAUNCHER
 ADDED from AndroidManifest.xml:19:17
 	android:name
 		ADDED from AndroidManifest.xml:19:27
-service#roman10.tutorial.tcpcommclient.TcpClientService
+service#com.endurancerobots.headcontrolclient.TcpClientService
 ADDED from AndroidManifest.xml:22:9
 	android:enabled
 		ADDED from AndroidManifest.xml:22:18

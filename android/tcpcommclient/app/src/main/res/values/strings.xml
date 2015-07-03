@@ -2,6 +2,9 @@
 <resources>
 
     <string name="hello">Hello World, TcpClient!</string>
-    <string name="app_name">tcpcommclient</string>
+    <string name="app_name">Head Control (Client)</string>
+    <string name="Up" >Up</string>
+    <string name="ipHint" >Head IP address</string>
+    <string name="connect" >Connect</string>
 
 </resources>

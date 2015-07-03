@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="roman10.tutorial.tcpcommclient.test">
+    package="com.endurancerobots.headcontrolclient.test">
 
     <uses-sdk android:minSdkVersion="4" android:targetSdkVersion="4" />
 
@@ -9,8 +9,8 @@
     </application>
 
     <instrumentation android:name="android.test.InstrumentationTestRunner"
-                     android:targetPackage="roman10.tutorial.tcpcommclient"
+                     android:targetPackage="com.endurancerobots.headcontrolclient"
                      android:handleProfiling="false"
                      android:functionalTest="false"
-                     android:label="Tests for roman10.tutorial.tcpcommclient"/>
+                     android:label="Tests for com.endurancerobots.headcontrolclient"/>
 </manifest>
