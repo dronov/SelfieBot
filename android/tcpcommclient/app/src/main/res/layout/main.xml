@@ -9,12 +9,13 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:id="@+id/imageView"
-        android:layout_below="@+id/buttonConnect"
         android:layout_alignRight="@+id/bRight"
         android:src="@drawable/edur_short_logo"
-        android:layout_above="@+id/bUp"
         android:onClick="logoOnClick"
-        android:visibility="visible" />
+        android:visibility="visible"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentTop="true"
+        android:background="#ffffffff" />
 
     <Button
         android:layout_width="@dimen/button_width"
@@ -60,7 +61,8 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentLeft="true"
-        android:hint="@string/ipHint"/>
+        android:hint="@string/ipHint"
+        android:text="localhost" />
 
     <Button
         android:layout_width="wrap_content"

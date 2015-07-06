@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,10 +32,12 @@ public class TcpClient extends Activity {
     /// TODO: Сделать акитвити настроек
     public void connectClick(View view) {
         EditText editHeadIp = (EditText)findViewById(R.id.editHeadIp);
+        ImageView imageView = (ImageView)findViewById(R.id.imageView);
         if(runTcpClient(editHeadIp.getText().toString(), TCP_SERVER_PORT))
         {
             view.setVisibility(View.INVISIBLE);
             editHeadIp.setVisibility(View.INVISIBLE);
+            imageView.setVisibility(View.INVISIBLE);
         }else{
             view.setVisibility(View.VISIBLE);
             editHeadIp.setVisibility(View.VISIBLE);
