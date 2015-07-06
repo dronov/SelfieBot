@@ -2,8 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:baselineAligned="false"
-    android:background="#ffffffff">
+    android:baselineAligned="false">
 
 
     <ImageView
@@ -13,7 +12,9 @@
         android:layout_below="@+id/buttonConnect"
         android:layout_alignRight="@+id/bRight"
         android:src="@drawable/edur_short_logo"
-        android:layout_above="@+id/bUp" />
+        android:layout_above="@+id/bUp"
+        android:onClick="logoOnClick"
+        android:visibility="visible" />
 
     <Button
         android:layout_width="@dimen/button_width"

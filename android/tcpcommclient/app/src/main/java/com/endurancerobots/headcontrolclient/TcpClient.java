@@ -2,6 +2,7 @@ package com.endurancerobots.headcontrolclient;
 
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -17,24 +18,26 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class TcpClient extends Activity {
+    public static final String FILE_NAME = "filename";
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        Intent intent = getIntent();
     }
+
+    /// TODO: Сделать акитвити настроек
     public void connectClick(View view) {
-        if(mS.isConnected())
+        EditText editHeadIp = (EditText)findViewById(R.id.editHeadIp);
+        if(runTcpClient(editHeadIp.getText().toString(), TCP_SERVER_PORT))
         {
-            try {
-                mS.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            Toast.makeText(getApplicationContext(), "Stop", Toast.LENGTH_SHORT).show();
-        }else
-        {
-            runTcpClient();
+            view.setVisibility(View.INVISIBLE);
+            editHeadIp.setVisibility(View.INVISIBLE);
+        }else{
+            view.setVisibility(View.VISIBLE);
+            editHeadIp.setVisibility(View.VISIBLE);
         }
     }
     private byte inMsg[] = new byte[5];
@@ -42,23 +45,26 @@ public class TcpClient extends Activity {
 	private Socket mS = new Socket();
 
     private static final int TCP_SERVER_PORT = 1553;
-	private void runTcpClient() {
-        EditText editHeadIp = (EditText)findViewById(R.id.editHeadIp);
-        try {
-            mS.connect(new InetSocketAddress(editHeadIp.getText().toString(),TCP_SERVER_PORT));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+	private boolean runTcpClient(String host, int port) {
+//        for (int i=0; i<3 && (!mS.isConnected());i++) { // try to connect N times
+            try {
+                mS.connect(new InetSocketAddress(host, port));
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+//        }
         if(mS.isConnected()) {
                 Toast.makeText(getApplicationContext(),
                         "Successful connection", Toast.LENGTH_SHORT).show();
             Log.i("TcpClient", "Successful connection");
-        }
-        else
-        {
+            return true;
+        } else {
             Log.i("TcpClient", "Can't connect to server");
                 Toast.makeText(getApplicationContext(),
                         "Can't connect to server", Toast.LENGTH_SHORT).show();
+            return false;
         }
     }
 	//replace runTcpClient() at onCreate with this method if you want to run tcp client as a service
@@ -70,6 +76,7 @@ public class TcpClient extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        stopService(new Intent(this,ControlOpenService.class));
         //close connection
         try {
             mS.close();
@@ -77,6 +84,19 @@ public class TcpClient extends Activity {
             e.printStackTrace();
         }
         Toast.makeText(getApplicationContext(), "Stop", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.i("TcpClient", "onStart");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.i("TcpClient", "onStop");
+//        startService(new Intent(this, ControlOpenService.class));
     }
 
     public void buttonLeftOnClick(View view)  {
@@ -137,4 +157,10 @@ public class TcpClient extends Activity {
     }
 
 
+    public void logoOnClick(View view) {
+        if(view.getVisibility() == View.VISIBLE)
+            view.setVisibility(View.GONE);
+        else
+            view.setVisibility(View.VISIBLE);
+    }
 }
