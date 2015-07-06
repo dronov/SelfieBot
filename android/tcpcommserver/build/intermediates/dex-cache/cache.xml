@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="/home/ilya/servo/android/tcpcommserver/app/libs/AmarinoLib.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="6e529684291e11458a75a22b4499a54b5280321c">
+        <dex dex="/home/ilya/servo/android/tcpcommserver/app/build/intermediates/pre-dexed/debug/AmarinoLib-58ad6d3b183c19f3318be68a7a899c3247593f2a.jar" />
+    </item>
+
+</items>

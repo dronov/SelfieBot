@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- From: file:/home/ilya/servo/android/tcpcommserver/app/src/main/res/values/dimens.xml -->
+    <eat-comment/>
+    <dimen name="adrSize">20dp</dimen>
     <!-- From: file:/home/ilya/servo/android/tcpcommserver/app/src/main/res/values/strings.xml -->
     <eat-comment/>
     <string name="app_name">Head Control (Server)</string>

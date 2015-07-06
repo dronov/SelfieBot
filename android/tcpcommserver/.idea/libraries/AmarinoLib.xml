@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="AmarinoLib">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/app/libs/AmarinoLib.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
