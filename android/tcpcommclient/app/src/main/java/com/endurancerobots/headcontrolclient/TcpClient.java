@@ -1,7 +1,12 @@
 package com.endurancerobots.headcontrolclient;
 
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -15,11 +20,23 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.apache.http.util.ByteArrayBuffer;
+
 public class TcpClient extends Activity {
-    public static final String FILE_NAME = "filename";
+    public static final String FILE_NAME = "filename"; // TODO: delete this string
+    private byte inMsg[] = new byte[5];
+
+    private byte outMsg[] = new byte[5];
+    private Socket mS = new Socket();
+
+    private static final int TCP_SERVER_PORT = 4445;
+    private static final int TCP_PROXY_SERVER_PORT = 4445;
+    private static final String PROXY_IP = "46.38.49.133";
+    private static final String COMP_IP = "192.168.1.117";
 
     /** Called when the activity is first created. */
     @Override
@@ -30,46 +47,115 @@ public class TcpClient extends Activity {
     }
 
     /// TODO: Сделать акитвити настроек
+    /**
+     * Connection to server
+     * @param view
+     */
     public void connectClick(View view) {
         EditText editHeadIp = (EditText)findViewById(R.id.editHeadIp);
-        ImageView imageView = (ImageView)findViewById(R.id.imageView);
-        if(runTcpClient(editHeadIp.getText().toString(), TCP_SERVER_PORT))
-        {
-            view.setVisibility(View.INVISIBLE);
-            editHeadIp.setVisibility(View.INVISIBLE);
-            imageView.setVisibility(View.INVISIBLE);
-        }else{
-            view.setVisibility(View.VISIBLE);
-            editHeadIp.setVisibility(View.VISIBLE);
+        boolean connected = runTcpClient(editHeadIp.getText().toString(), TCP_SERVER_PORT);
+        Log.i("TcpClient","P2PConnect");
+        if(connected){
+            hideUI();
+            Toast.makeText(getApplicationContext(),
+                    getString(R.string.connectionp2p), Toast.LENGTH_SHORT).show();
+        }
+        else {
+            Toast.makeText(getApplicationContext(),
+                    getString(R.string.connectionp2pnot), Toast.LENGTH_SHORT).show();
         }
     }
-    private byte inMsg[] = new byte[5];
-	private byte outMsg[] = new byte[5];
-	private Socket mS = new Socket();
+    public void connectProxyClick(View view) {
+        boolean connected = runTcpProxyClient(PROXY_IP, TCP_PROXY_SERVER_PORT);
+        Log.i("TcpClient","ProxyConnect");
+        if(connected){
+            hideUI();
+            Toast.makeText(getApplicationContext(),
+                    getString(R.string.connectionproxy), Toast.LENGTH_SHORT).show();
+        }
+        else {
+            Toast.makeText(getApplicationContext(),
+                    getString(R.string.connectionproxynot), Toast.LENGTH_SHORT).show();
+        }
+    }
+    String ERROR = "\r\nERROR\r\n";
+    String WAIT = "\r\nWAIT\r\n";
+    String CONNECT = "\r\nCONNECT\r\n";
+    String strId = "G123456789\r";
+    private byte inputBuf[] = new byte[50];
 
-    private static final int TCP_SERVER_PORT = 1553;
-
-	private boolean runTcpClient(String host, int port) {
-//        for (int i=0; i<3 && (!mS.isConnected());i++) { // try to connect N times
-            try {
-                mS.connect(new InetSocketAddress(host, port));
-            } catch (IOException e) {
-                e.printStackTrace();
-                return false;
+    /**
+     * Connection with proxy client
+     * @param proxyIp - ip-address of server
+     * @param proxyServerPort - destination port
+     * @return true if connection is successful
+     */
+    private boolean runTcpProxyClient(String proxyIp, int proxyServerPort) {
+        String s="";
+            if (runTcpClient(proxyIp, proxyServerPort)) {
+                while (!s.contains(CONNECT))
+                try {
+                    BufferedWriter out = new BufferedWriter(new OutputStreamWriter(mS.getOutputStream()));
+                    /// Send id-string
+                    out.write(strId);
+                    out.flush();
+                    Log.i("TcpClient.proxy", "Send id-string '" + strId + "'");
+                    /// Receive answer
+                    BufferedReader in = new BufferedReader(new InputStreamReader(mS.getInputStream()));
+                    mS.getInputStream().read(inputBuf);
+                    Log.i("TcpClient.proxy", "Receive answer: " + inputBuf);
+                    ///Analize string
+                    s = new String(inputBuf, "UTF-8");
+                    Log.i("TcpClient.proxy", "Convert answer: " + s);
+                    if (s.contains(CONNECT)) {
+                        Log.i("TcpClient.proxy", CONNECT);
+                        return true;
+                    } else if (s.contains(WAIT)) {
+                        Log.i("TcpClient.proxy", WAIT);
+//                        wait(500);
+                        continue;
+                    } else if (s.contains(ERROR)) {
+                        Log.e("TcpClient.proxy", ERROR);
+                        return false;
+                    } else {
+                        Log.i("TcpClient.proxy", "Got only: " + inputBuf.toString());
+                        return false;
+                    }
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-//        }
-        if(mS.isConnected()) {
-                Toast.makeText(getApplicationContext(),
-                        "Successful connection", Toast.LENGTH_SHORT).show();
-            Log.i("TcpClient", "Successful connection");
+        return false;
+    }
+
+    private void hideUI() {
+        /** Make UI transparent to see the Skype, Linphone etc...*/
+        RelativeLayout connectionUILayout = (RelativeLayout) findViewById(R.id.connectionUI);
+        connectionUILayout.setVisibility(View.INVISIBLE);
+    }
+    /**
+     * @param host - server ip-address
+     * @param port - server port
+     * @return true - with successful connection, else return "false"
+     */
+    private boolean runTcpClient(String host, int port) {
+        try {
+            mS.connect(new InetSocketAddress(host, port));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        if (mS.isConnected()) {
+            Log.i("TcpClient", "Successful connection to " + host + ":"+port);
             return true;
         } else {
-            Log.i("TcpClient", "Can't connect to server");
-                Toast.makeText(getApplicationContext(),
-                        "Can't connect to server", Toast.LENGTH_SHORT).show();
+            Log.i("TcpClient", "Can't connect to server" + host + ":"+port);
             return false;
         }
     }
+
 	//replace runTcpClient() at onCreate with this method if you want to run tcp client as a service
 	private void runTcpClientAsService() {
 		Intent lIntent = new Intent(this.getApplicationContext(), TcpClientService.class);
@@ -99,7 +185,6 @@ public class TcpClient extends Activity {
     protected void onStop() {
         super.onStop();
         Log.i("TcpClient", "onStop");
-//        startService(new Intent(this, ControlOpenService.class));
     }
 
     public void buttonLeftOnClick(View view)  {
@@ -117,7 +202,6 @@ public class TcpClient extends Activity {
     }
 
     public void buttonRightOnClick(View view)  {
-
         outMsg[0] = 'd';
         outMsg[1] = 'd';
         outMsg[2] = 'd';
@@ -145,6 +229,7 @@ public class TcpClient extends Activity {
         Log.i("TcpClient", "sent: " + outMsg);
     }
 
+
     public void buttonDownOnClick(View view)  {
         outMsg[0] = 's';
         outMsg[1] = 's';
@@ -158,7 +243,6 @@ public class TcpClient extends Activity {
         }
         Log.i("TcpClient", "sent: " + outMsg.toString());
     }
-
 
     public void logoOnClick(View view) {
         if(view.getVisibility() == View.VISIBLE)

@@ -3,5 +3,7 @@
 
     <string name="hello">Now you can connect to me</string>
     <string name="app_name">Head Control (Server)</string>
+    <string name="connectProxy">Соединение с прокси-сервером</string>
+    <string name="connectP2P">Создать локальный сервер</string>
 
 </resources>

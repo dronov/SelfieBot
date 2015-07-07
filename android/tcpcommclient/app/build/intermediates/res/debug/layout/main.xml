@@ -5,74 +5,89 @@
     android:baselineAligned="false">
 
 
-    <ImageView
+    <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:id="@+id/imageView"
-        android:layout_alignRight="@+id/bRight"
-        android:src="@drawable/edur_short_logo"
-        android:onClick="logoOnClick"
-        android:visibility="visible"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentTop="true"
-        android:background="#ffffffff" />
+        android:id="@+id/connectionUI">
 
-    <Button
-        android:layout_width="@dimen/button_width"
-        android:layout_height="@dimen/button_height"
-        android:text="Left"
-        android:id="@+id/bLeft"
-        android:onClick="buttonLeftOnClick"
-        android:layout_alignBaseline="@+id/bDown"
-        android:layout_alignBottom="@+id/bDown"
-        android:layout_alignParentLeft="true" />
+        <ImageView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:id="@+id/imageView"
+            android:src="@drawable/edur_short_logo"
+            android:onClick="logoOnClick"
+            android:visibility="visible"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentTop="true"
+            android:background="#ffffffff" />
 
-    <Button
-        android:layout_width="@dimen/button_width"
-        android:layout_height="@dimen/button_height"
-        android:text="Right"
-        android:id="@+id/bRight"
-        android:layout_alignTop="@+id/bLeft"
-        android:layout_alignParentRight="true"
-        android:onClick="buttonRightOnClick"/>
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">
 
-    <Button
-        android:layout_width="@dimen/button_width"
-        android:layout_height="@dimen/button_height"
-        android:text="@string/Up"
-        android:id="@+id/bUp"
-        android:onClick="buttonUpOnClick"
-        android:layout_above="@+id/bDown"
-        android:layout_alignLeft="@+id/bDown" />
+            <EditText
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/editHeadIp"
+                android:hint="@string/ipHint"
+                android:text="localhost" />
 
-    <Button
-        android:layout_width="@dimen/button_width"
-        android:layout_height="@dimen/button_height"
-        android:text="Down"
-        android:id="@+id/bDown"
-        android:onClick="buttonDownOnClick"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+            <Button
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/connect"
+                android:id="@+id/buttonConnect"
+                android:textStyle="bold"
+                android:onClick="connectClick"/>
 
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/editHeadIp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentLeft="true"
-        android:hint="@string/ipHint"
-        android:text="localhost" />
+            <Button
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/сonnectproxy"
+                android:id="@+id/buttonProxyConnect"
+                android:textStyle="bold"
+                android:onClick="connectProxyClick"/>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/connect"
-        android:id="@+id/buttonConnect"
-        android:layout_below="@id/editHeadIp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:textStyle="bold"
-        android:onClick="connectClick"/>
+        </LinearLayout>
+    </RelativeLayout>
+
+    <FrameLayout
+        android:layout_width="fill_parent"
+        android:layout_height="250dp"
+        android:layout_alignParentBottom="true">
+
+        <Button
+            android:layout_width="@dimen/button_width"
+            android:layout_height="@dimen/button_height"
+            android:text="@string/left"
+            android:id="@+id/bLeft"
+            android:onClick="buttonLeftOnClick"
+            android:layout_gravity="left|bottom" />
+
+        <Button
+            android:layout_width="@dimen/button_width"
+            android:layout_height="@dimen/button_height"
+            android:text="@string/Up"
+            android:id="@+id/bUp"
+            android:onClick="buttonUpOnClick"
+            android:layout_gravity="center" />
+
+        <Button
+            android:layout_width="@dimen/button_width"
+            android:layout_height="@dimen/button_height"
+            android:text="@string/down"
+            android:id="@+id/bDown"
+            android:onClick="buttonDownOnClick"
+            android:layout_gravity="center_horizontal|bottom" />
+
+        <Button
+            android:layout_width="@dimen/button_width"
+            android:layout_height="@dimen/button_height"
+            android:text="@string/right"
+            android:id="@+id/bRight"
+            android:onClick="buttonRightOnClick"
+            android:layout_gravity="right|bottom" />
+    </FrameLayout>
 
 </RelativeLayout><!-- From: file:/home/ilya/servo/android/tcpcommclient/app/src/main/res/layout/main.xml -->

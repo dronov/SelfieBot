@@ -11,39 +11,35 @@
         android:layout_height="wrap_content"
         android:text="@string/hello" />
 
-    <LinearLayout
-        android:orientation="horizontal"
+    <EditText
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:id="@+id/editArduinoMac"
+        android:layout_gravity="center_horizontal"
+        android:text="00:12:05:04:80:21" />
 
-        <ImageView
-            android:layout_width="68dp"
-            android:layout_height="66dp"
-            android:id="@+id/imageView"
-            android:layout_gravity="center_horizontal"
-            android:src="@mipmap/ic_launcher" />
-
-        <EditText
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:id="@+id/editArduinoMac"
-            android:layout_gravity="center_horizontal"
-            android:text="00:12:05:04:80:21" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:orientation="horizontal"
+    <TextView
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:id="@+id/ipAddr"
+        android:layout_weight="0.20" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:id="@+id/ipAddr"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="0.25" />
-    </LinearLayout>
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/connectP2P"
+        android:id="@+id/button2"
+        android:layout_gravity="center_horizontal"
+        android:onClick="createLocalServer" />
+
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/connectProxy"
+        android:id="@+id/button"
+        android:layout_gravity="center_horizontal"
+        android:onClick="connectViaProxy"/>
 
     <Button
         android:layout_width="fill_parent"
@@ -52,8 +48,6 @@
         android:id="@+id/buttonBackground"
         android:onClick="buttonBackgroundOnClick"
         android:layout_weight="0.13"
-        android:background="#ff3b4cff"
-        android:clickable="true"
-        android:textColor="#ffffffff" />
+        android:clickable="true" />
 
 </LinearLayout>

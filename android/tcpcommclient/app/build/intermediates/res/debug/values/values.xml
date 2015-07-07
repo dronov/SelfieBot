@@ -8,9 +8,17 @@
     <dimen name="button_width">100dp</dimen>
     <!-- From: file:/home/ilya/servo/android/tcpcommclient/app/src/main/res/values/strings.xml -->
     <eat-comment/>
-    <string name="Up">Up</string>
+    <string name="Up">Верх</string>
     <string name="app_name">Head Control (Client)</string>
-    <string name="connect">Connect</string>
+    <string name="connect">Соединение p2p (порт 1553)</string>
+    <string name="connectionp2p">Успешное подключение точка-точка</string>
+    <string name="connectionp2pnot">Невозможно подключиться к серверу</string>
+    <string name="connectionproxy">Успешное подключение\nчерез прокси-сервер</string>
+    <string name="connectionproxynot">Невозможно подключиться\nк прокси-серверу</string>
+    <string name="down">Низ</string>
     <string name="hello">Hello World, TcpClient!</string>
     <string name="ipHint">Head IP address</string>
+    <string name="left">Лево</string>
+    <string name="right">Право</string>
+    <string name="сonnectproxy">Соединение через прокси (порт 4445)</string>
 </resources>
