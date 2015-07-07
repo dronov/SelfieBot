@@ -1,0 +1,74 @@
+—оединение с адресом 46.38.49.133 порт 4445 TCP
+
+ƒл€ ожидающей программы со стороны робота передача строки идентификации в виде (перва€ буква S):
+S123456789
+дл€ программы со стороны клиента передача строки идентификации в виде (перва€ буква G):
+G123456789
+число 123456789 - идентификатор подключени€.
+дл€ нескольких соединений дл€ передачи видео, аудио и управл€ющих команд предлагаетс€ использовать суффиксы, например
+S123456789.aux - передача звука
+S123456789.jpg - передача изображени€
+S123456789.cmd - передача команд и телеметрии
+
+строка идентификации должна завершатьс€ переводом строки '\r' (0x0D)
+
+ѕри отсутствии другой стороны будет передана строка
+"\r\nWAIT\r\n"
+после которой соединение будет висеть без передачи данных.
+
+¬ случае наличи€ ошибок будет передана строка 
+"\r\nERROR\r\n"
+
+¬ случае наличи€ другой стороны, а также в случае конца ожидани€ юужет передана строка
+"\r\nCONNECT\r\n"
+сразу после которой будет установлен прозрачный канал с другой стороной
+
+¬ случае разрыва соединени€ другой стороной данное соединение также будет разорвано.
+¬ этом случае надо подключатьс€ заново.
+
+ѕример кода дл€ установлени€ соединени€ на —++
+	int i, res;
+	char new_chr;
+	SOCKET sock;
+	char * RemoteIP = "46.38.49.133";
+	char * ident_str = "S123456789.cmd";
+	struct sockaddr_in remote_server;
+	char buffer[1024];
+
+	sock = socket(AF_INET, SOCK_STREAM, 0);
+	if (sock == INVALID_SOCKET) {
+		return INVALID_SOCKET;
+	}
+	memset(&remote_server, 0, sizeof(remote_server));
+	remote_server.sin_family = AF_INET;
+	remote_server.sin_port = htons(4445);
+	remote_server.sin_addr.s_addr = inet_addr(RemoteIP);
+	if (connect(sock, (const struct sockaddr *) &remote_server, sizeof(remote_server)) != 0) {
+		closesocket(sock);
+		return INVALID_SOCKET;
+	}
+	if (send(sock, ident_str, strlen(ident_str), 0) != strlen(ident_str)) {
+		closesocket(sock);
+		return INVALID_SOCKET;
+	}
+	for (i = 0; i < sizeof(buffer) - 10; ) {
+		res = recv(sock, &new_chr, 1, 0);
+		if (res < 0) {
+			closesocket(sock);
+			return INVALID_SOCKET;
+		}
+		if (res > 0) {
+			buffer[i] = new_chr;
+			i++;
+			buffer[i] = 0;
+			if (strstr(buffer, "\r\nCONNECT\r\n") != NULL) {
+				return sock;
+			}
+		}
+
+	}
+	closesocket(sock);
+	return INVALID_SOCKET;
+
+
+
