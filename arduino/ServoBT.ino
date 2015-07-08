@@ -1,6 +1,6 @@
-
 #include <SoftwareSerial.h>
 #include <Servo.h>
+#include <MeetAndroid.h>
 #define RX 3  //(analog)   
 #define TX 5  //(analog)
 #define BTN 8   //порт считывания сигнала кнопки(digit)
@@ -12,7 +12,6 @@
 
 /*Изначально включаем питание для микроконтроллера. Серовоприводы остаются выключенными.
 Кнопка нажимется- сервоприводы встают в базовое положение. Вновь нажатие- контроль за ними прерывается/*
-
 /*Допускается 4 распознаваемых байта, соответствующих '7,'9','1','0';
 При первом получении определенного байта он запоминается, дается допуск к повороту и совершается сам поворот.
 Если далее мы не получаем новых байтов, то поворот продолжается. Если получаем повтороно тот же байт,
@@ -23,7 +22,7 @@
 SoftwareSerial myser(RX,TX);
 Servo servo1;  
 Servo servo2;
-
+MeetAndroid meetAndroid;
 //Вектор поворота сервопривода
 struct Vect
 {
@@ -35,13 +34,17 @@ struct Vect
 }P1,P2;  //вектора для серовприводов 1(влево-вправо) и 2(вверх-вниз)
 
 char incomingbyte;  
-int  LED = 13;       
+int onboardLed = 13;      
 int delta;
-int i;  //флаг нажатия кнопки
+int i;  //флаг приема данных
 int prov( struct Vect *, char);  //функция проверки допустимости входного байта для сервоприводов
+char inputStr[5]; // ПРИНИМАЕМОЕ СООБЩЕНИЕ
+
+
 
 void setup() {
-  
+  Serial.begin(9600);
+  meetAndroid.registerFunction(comingString, 'A');
   P1.mas[0]='w';
   P1.mas[1]='s';
   P2.mas[0]='d';
@@ -50,51 +53,33 @@ void setup() {
   P2.bt=P2.ex=0;
   delta=2;
   myser.begin(9600);
-  pinMode(LED, OUTPUT);
-  pinMode(BTN, OUTPUT);
-  i=0;  //0- флаг указывает на то, что сервы не управляются. Иначе флаг равен 1.
-}
- 
-void loop() {
-  if(i==0)  
-    {
-      servo1.detach(); 
-      servo2.detach();
-      P2.bt=P1.ex=0;
-      P2.bt=P2.ex=0;
-      digitalWrite(LED,0);  
-    }
-  else
-    {
-      servo1.attach(S1P);
+  pinMode(onboardLed, OUTPUT);
+  digitalWrite(onboardLed, HIGH);
+  servo1.attach(S1P);
       servo2.attach(S2P);
       P1.ang=STRTANG;
       P2.ang=STRTANG;
       servo1.write(P1.ang);
       servo2.write(P2.ang);
-      myser.flush();
-      digitalWrite(LED,1);
-    }
+  i=0;  //0- флаг указывает на то, что данные не были получены. Иначе флаг равен 1.
+}
+ 
+void loop() {
     /*Если идет прием байтов, то проверяем, входят ли они в диапазон 
 назначенных за управление байтов. В зависимости от этого будем либо
 изменять направление поворота(или останавливать), либо же никакие 
 действия производить не будем*/
-  while(i==1)
-  {
-  if (myser.available() > 0)
+  meetAndroid.receive();
+  if (i==1)  //допускается проверка данных на соотвествие допустимым байтам
   {  
-    incomingbyte = myser.read(); // считываем байт
-    myser.println(incomingbyte, DEC);
-    myser.println("dsds");
-    myser.println(digitalRead(BTN));
-     if (prov(&P1,incomingbyte));  //проверяем, входит ли в диапазон разрешенных байт первого сервопривода
+     if (prov(&P1,inputStr[0]));  //проверяем, входит ли в диапазон разрешенных байт первого сервопривода
        else  
-         prov(&P2,incomingbyte);  //-||- второго сервопривода
+         prov(&P2,inputStr[0]);  //-||- второго сервопривода
   }
 //Если поворот серовприводов разрешен, то оцениваем направление поворота 
   if(P1.ex)
   {
-      if(P1.bt==P1.mas[0]&&P1.ang>MINANG+50)  //если поворот против часовой стрелки и угол больше 0  
+      if(  P1.bt==P1.mas[0]&&P1.ang>MINANG+50)  //если поворот против часовой стрелки и угол больше 0  
           {
             P1.ang-=delta;  
             servo1.write(P1.ang);
@@ -122,19 +107,8 @@ void loop() {
   
   } 
   delay(25);
+  i=0;  
   //если нажимаем кнопку
-  if (digitalRead(BTN)==1)
-  {
-      i=0;
-      while(digitalRead(BTN)==1);  //ждем до отпуска кнопки
-  }
-    }
-      if (digitalRead(BTN)==1&&i==0)  //если повторно нажали(следим за этим условием i==0)
-      {
-        i=1;
-        while(digitalRead(BTN)==1);
-      }
-      
 }
     
 int prov(struct Vect *p, char c)
@@ -156,4 +130,18 @@ int prov(struct Vect *p, char c)
     return 1;
   }
   return 0;
+}
+
+void comingString(byte flag, byte numOfValues)
+{
+
+  meetAndroid.getString(inputStr);
+  i=1;  //получили данные. 
+}
+void flushLed(int time)
+{
+  digitalWrite(onboardLed, LOW);
+  delay(time);
+  digitalWrite(onboardLed, HIGH);
+  delay(time);
 }
