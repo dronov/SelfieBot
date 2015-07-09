@@ -10,6 +10,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -31,7 +32,7 @@ public class TcpClient extends Activity {
     private byte inMsg[] = new byte[5];
 
     private byte outMsg[] = new byte[5];
-    private Socket mS = new Socket();
+    private Socket mS;
 
     private static final int TCP_SERVER_PORT = 4445;
     private static final int TCP_PROXY_SERVER_PORT = 4445;
@@ -53,6 +54,7 @@ public class TcpClient extends Activity {
      */
     public void connectClick(View view) {
         EditText editHeadIp = (EditText)findViewById(R.id.editHeadIp);
+        mS = new Socket();
         boolean connected = runTcpClient(editHeadIp.getText().toString(), TCP_SERVER_PORT);
         Log.i("TcpClient","P2PConnect");
         if(connected){
@@ -66,6 +68,7 @@ public class TcpClient extends Activity {
         }
     }
     public void connectProxyClick(View view) {
+        mS = new Socket();
         boolean connected = runTcpProxyClient(PROXY_IP, TCP_PROXY_SERVER_PORT);
         Log.i("TcpClient","ProxyConnect");
         if(connected){
@@ -165,7 +168,6 @@ public class TcpClient extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        stopService(new Intent(this,ControlOpenService.class));
         //close connection
         try {
             mS.close();
@@ -178,12 +180,14 @@ public class TcpClient extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
+//        stopService(new Intent(this, MyService.class));
         Log.i("TcpClient", "onStart");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        startService(new Intent(this, MyService.class));
         Log.i("TcpClient", "onStop");
     }
 

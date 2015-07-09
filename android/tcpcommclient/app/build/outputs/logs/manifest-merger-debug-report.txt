@@ -86,3 +86,11 @@ ADDED from AndroidManifest.xml:38:9
 		ADDED from AndroidManifest.xml:40:13
 	android:name
 		ADDED from AndroidManifest.xml:39:13
+service#com.endurancerobots.headcontrolclient.MyService
+ADDED from AndroidManifest.xml:43:9
+	android:exported
+		ADDED from AndroidManifest.xml:46:13
+	android:enabled
+		ADDED from AndroidManifest.xml:45:13
+	android:name
+		ADDED from AndroidManifest.xml:44:13

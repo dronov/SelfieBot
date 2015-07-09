@@ -21,4 +21,16 @@
     <string name="left">Лево</string>
     <string name="right">Право</string>
     <string name="сonnectproxy">Соединение через прокси (порт 4445)</string>
+    <!-- From: file:/home/ilya/servo/android/tcpcommclient/app/src/main/res/values/styles.xml -->
+    <eat-comment/>
+    <style name="Theme.Transparent" parent="android:Theme">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <!-- Достаточно двух предыдущих -->
+        <item name="android:windowContentOverlay">@null</item>
+
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
 </resources>
