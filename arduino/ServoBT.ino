@@ -54,6 +54,7 @@ void setup() {
   delta=2;
   myser.begin(9600);
   pinMode(onboardLed, OUTPUT);
+  pinMode(7,OUTPUT);
   digitalWrite(onboardLed, HIGH);
   servo1.attach(S1P);
       servo2.attach(S2P);
@@ -137,11 +138,12 @@ void comingString(byte flag, byte numOfValues)
 
   meetAndroid.getString(inputStr);
   i=1;  //получили данные. 
+  flushLed(150);
 }
 void flushLed(int time)
 {
-  digitalWrite(onboardLed, LOW);
+  digitalWrite(7, HIGH);
   delay(time);
-  digitalWrite(onboardLed, HIGH);
+  digitalWrite(7, LOW);
   delay(time);
 }
