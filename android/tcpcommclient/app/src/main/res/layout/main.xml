@@ -15,8 +15,6 @@
             android:layout_height="fill_parent"
             android:id="@+id/imageView"
             android:src="@drawable/edur_short_logo"
-            android:onClick="logoOnClick"
-            android:visibility="visible"
             android:layout_alignParentBottom="true"
             android:layout_alignParentTop="true"
             android:background="#ffffffff" />
@@ -24,14 +22,16 @@
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent">
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true">
 
             <EditText
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/editHeadIp"
                 android:hint="@string/ipHint"
-                android:text="localhost" />
+                android:text="192.168.1.255" />
 
             <Button
                 android:layout_width="fill_parent"
@@ -52,42 +52,42 @@
         </LinearLayout>
     </RelativeLayout>
 
-    <FrameLayout
-        android:layout_width="fill_parent"
-        android:layout_height="250dp"
-        android:layout_alignParentBottom="true">
+    <!--<FrameLayout-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:layout_height="250dp"-->
+        <!--android:layout_alignParentBottom="true">-->
 
-        <Button
-            android:layout_width="@dimen/button_width"
-            android:layout_height="@dimen/button_height"
-            android:text="@string/left"
-            android:id="@+id/bLeft"
-            android:onClick="buttonLeftOnClick"
-            android:layout_gravity="left|bottom" />
+        <!--<Button-->
+            <!--android:layout_width="@dimen/button_width"-->
+            <!--android:layout_height="@dimen/button_height"-->
+            <!--android:text="@string/left"-->
+            <!--android:id="@+id/bLeft"-->
+            <!--android:onClick="buttonLeftOnClick"-->
+            <!--android:layout_gravity="left|bottom" />-->
 
-        <Button
-            android:layout_width="@dimen/button_width"
-            android:layout_height="@dimen/button_height"
-            android:text="@string/Up"
-            android:id="@+id/bUp"
-            android:onClick="buttonUpOnClick"
-            android:layout_gravity="center" />
+        <!--<Button-->
+            <!--android:layout_width="@dimen/button_width"-->
+            <!--android:layout_height="@dimen/button_height"-->
+            <!--android:text="@string/Up"-->
+            <!--android:id="@+id/bUp"-->
+            <!--android:onClick="buttonUpOnClick"-->
+            <!--android:layout_gravity="center" />-->
 
-        <Button
-            android:layout_width="@dimen/button_width"
-            android:layout_height="@dimen/button_height"
-            android:text="@string/down"
-            android:id="@+id/bDown"
-            android:onClick="buttonDownOnClick"
-            android:layout_gravity="center_horizontal|bottom" />
+        <!--<Button-->
+            <!--android:layout_width="@dimen/button_width"-->
+            <!--android:layout_height="@dimen/button_height"-->
+            <!--android:text="@string/down"-->
+            <!--android:id="@+id/bDown"-->
+            <!--android:onClick="buttonDownOnClick"-->
+            <!--android:layout_gravity="center_horizontal|bottom" />-->
 
-        <Button
-            android:layout_width="@dimen/button_width"
-            android:layout_height="@dimen/button_height"
-            android:text="@string/right"
-            android:id="@+id/bRight"
-            android:onClick="buttonRightOnClick"
-            android:layout_gravity="right|bottom" />
-    </FrameLayout>
+        <!--<Button-->
+            <!--android:layout_width="@dimen/button_width"-->
+            <!--android:layout_height="@dimen/button_height"-->
+            <!--android:text="@string/right"-->
+            <!--android:id="@+id/bRight"-->
+            <!--android:onClick="buttonRightOnClick"-->
+            <!--android:layout_gravity="right|bottom" />-->
+    <!--</FrameLayout>-->
 
 </RelativeLayout>

@@ -30,8 +30,7 @@ public class MyService extends Service {
                 System.currentTimeMillis());
 
         // 3-я часть
-        Intent intent = new Intent(this, TcpClient.class);
-        intent.putExtra(TcpClient.FILE_NAME, "somefile");
+        Intent intent = new Intent(this, ControlService.class);
         PendingIntent pIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
         // 2-я часть

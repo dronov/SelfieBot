@@ -13,6 +13,7 @@ import java.net.Socket;
 import java.net.SocketException;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -38,13 +39,20 @@ public class TcpClient extends Activity {
     private static final int TCP_PROXY_SERVER_PORT = 4445;
     private static final String PROXY_IP = "46.38.49.133";
     private static final String COMP_IP = "192.168.1.117";
+    private Context _context;
+    private Intent _serviceIntent;
+    private String ip="localhost";
+    private int port=4445;
 
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        Intent intent = getIntent();
+
+
+        _context = this.getBaseContext();
+        _serviceIntent = new Intent(_context, com.endurancerobots.headcontrolclient.ControlService.class);
     }
 
     /// TODO: Сделать акитвити настроек
@@ -135,8 +143,10 @@ public class TcpClient extends Activity {
 
     private void hideUI() {
         /** Make UI transparent to see the Skype, Linphone etc...*/
-        RelativeLayout connectionUILayout = (RelativeLayout) findViewById(R.id.connectionUI);
-        connectionUILayout.setVisibility(View.INVISIBLE);
+//        RelativeLayout connectionUILayout = (RelativeLayout) findViewById(R.id.connectionUI);
+//        connectionUILayout.setVisibility(View.INVISIBLE);
+        finish();
+        startService(_serviceIntent);
     }
     /**
      * @param host - server ip-address
@@ -187,39 +197,38 @@ public class TcpClient extends Activity {
     @Override
     protected void onStop() {
         super.onStop();
-        startService(new Intent(this, MyService.class));
+
         Log.i("TcpClient", "onStop");
     }
-
-    public void buttonLeftOnClick(View view)  {
+    public void turnLeft(View view)  {
         outMsg[0] = 'a';
         outMsg[1] = 'a';
         outMsg[2] = 'a';
         outMsg[3] = 'a';
         outMsg[4] = 'a';
         try {
-                mS.getOutputStream().write(outMsg);
+            mS.getOutputStream().write(outMsg);
         } catch (IOException e) {
             e.printStackTrace();
         }
         Log.i("TcpClient", "sent: " + outMsg.toString());
     }
 
-    public void buttonRightOnClick(View view)  {
+    public void turnRight(View view)  {
         outMsg[0] = 'd';
         outMsg[1] = 'd';
         outMsg[2] = 'd';
         outMsg[3] = 'd';
         outMsg[4] = 'd';
         try {
-                mS.getOutputStream().write(outMsg);
+            mS.getOutputStream().write(outMsg);
         } catch (IOException e) {
             e.printStackTrace();
         }
         Log.i("TcpClient", "sent: " + outMsg.toString());
     }
 
-    public void buttonUpOnClick(View view) {
+    public void turnUp(View view) {
         outMsg[0] = 'w';
         outMsg[1] = 'w';
         outMsg[2] = 'w';
@@ -234,7 +243,7 @@ public class TcpClient extends Activity {
     }
 
 
-    public void buttonDownOnClick(View view)  {
+    public void turnDown(View view)  {
         outMsg[0] = 's';
         outMsg[1] = 's';
         outMsg[2] = 's';
@@ -246,12 +255,5 @@ public class TcpClient extends Activity {
             e.printStackTrace();
         }
         Log.i("TcpClient", "sent: " + outMsg.toString());
-    }
-
-    public void logoOnClick(View view) {
-        if(view.getVisibility() == View.VISIBLE)
-            view.setVisibility(View.GONE);
-        else
-            view.setVisibility(View.VISIBLE);
     }
 }
