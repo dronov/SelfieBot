@@ -27,12 +27,11 @@ public final class R {
         public static final int bPause=0x7f080000;
         public static final int bRight=0x7f080004;
         public static final int bUp=0x7f080005;
-        public static final int buttonConnect=0x7f08000a;
-        public static final int buttonProxyConnect=0x7f08000b;
+        public static final int buttonProxyConnect=0x7f08000a;
         public static final int connectionUI=0x7f080007;
         public static final int controlButtons=0x7f080001;
-        public static final int editHeadIp=0x7f080009;
         public static final int imageView=0x7f080008;
+        public static final int linearLayout=0x7f080009;
     }
     public static final class layout {
         public static final int keys=0x7f040000;

@@ -14,6 +14,9 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.Toast;
+
+import java.io.IOException;
 
 public class ControlService extends Service {
     private static final String TAG = "ControlService";
@@ -25,6 +28,8 @@ public class ControlService extends Service {
     private final int controlHeight = 300; // in dp
     private String ip="localhost";
     private int port=4445;
+    private TcpProxyClient mS;
+    private byte outMsg[] = new byte[5];
 
     public ControlService() {
     }
@@ -44,96 +49,103 @@ public class ControlService extends Service {
         Log.i(TAG, "onCreate ENTER");
         super.onCreate();
 
+        mS = new TcpProxyClient();
+        boolean connected = mS.runTcpProxyClient(TcpProxyClient.PROXY_IP, TcpProxyClient.TCP_PROXY_SERVER_PORT);
+        if(!connected){
+            Log.i(TAG, "runTcpProxyClient was not connected!");
+            Toast.makeText(getApplicationContext(),"Client was not connected!",Toast.LENGTH_LONG).show();
+//            startActivity(new Intent(getApplicationContext(),TcpClient.class));
+            stopSelf();
+        }else {
+            Toast.makeText(getApplicationContext(), "CONNECT", Toast.LENGTH_LONG).show();
 
-
-        final int LayoutParamFlags = WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
-                | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+            final int LayoutParamFlags = WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
+                    | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                    | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 //                | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
 //                | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
-        layoutParams = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.FILL_PARENT,
-                controlHeight,
-                WindowManager.LayoutParams.TYPE_PRIORITY_PHONE,
-                LayoutParamFlags,
-                PixelFormat.TRANSLUCENT);
-        Log.d(TAG,"layoutParams");
+            layoutParams = new WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.FILL_PARENT,
+                    controlHeight,
+                    WindowManager.LayoutParams.TYPE_PRIORITY_PHONE,
+                    LayoutParamFlags,
+                    PixelFormat.TRANSLUCENT);
+            Log.d(TAG, "layoutParams");
 
-        layoutInflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-        Log.d(TAG,"layoutInflater");
+            layoutInflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+            Log.d(TAG, "layoutInflater");
 
-        _winMgr = (WindowManager)getSystemService(WINDOW_SERVICE);
+            _winMgr = (WindowManager) getSystemService(WINDOW_SERVICE);
 
-        myView = layoutInflater.inflate(R.layout.keys,null);
-        Log.d(TAG,"layoutInflater");
+            myView = layoutInflater.inflate(R.layout.keys, null);
+            Log.d(TAG, "layoutInflater");
 
-        bUp = (Button) myView.findViewById(R.id.bUp);
-        bDown = (Button) myView.findViewById(R.id.bDown);
-        bLeft = (Button) myView.findViewById(R.id.bLeft);
-        bRight = (Button) myView.findViewById(R.id.bRight);
-        Button bClose = (Button) myView.findViewById(R.id.bClose);
-        Button bPause = (Button) myView.findViewById(R.id.bPause);
-        Log.d(TAG, "layoutInflater");
+            bUp = (Button) myView.findViewById(R.id.bUp);
+            bDown = (Button) myView.findViewById(R.id.bDown);
+            bLeft = (Button) myView.findViewById(R.id.bLeft);
+            bRight = (Button) myView.findViewById(R.id.bRight);
+            Button bClose = (Button) myView.findViewById(R.id.bClose);
+            Button bPause = (Button) myView.findViewById(R.id.bPause);
+            Log.d(TAG, "layoutInflater");
 
-        bUp.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                Log.d(TAG, "Up");
-                return false;
-            }
-        });
-        bDown.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                Log.d(TAG, "Down");
-                return false;
-            }
-        });
-        bLeft.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                Log.d(TAG, "Left");
-                return false;
-            }
-        });
-        bRight.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                Log.d(TAG, "Right");
-                return false;
-            }
-        });
-        bClose.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                Log.d(TAG, "Closing...");
-                stopSelf();
-                return false;
-            }
-        });
-        bPause.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.d(TAG, "Pausing...");
-                FrameLayout fl = (FrameLayout) myView.findViewById(R.id.controlButtons);
-                if(View.VISIBLE == fl.getVisibility()){
-                    fl.setVisibility(View.GONE);
-                    layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
-                    layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
-                }else
-                {
-                    fl.setVisibility(View.VISIBLE);
-                    layoutParams.height = controlHeight;
-                    layoutParams.width = WindowManager.LayoutParams.FILL_PARENT;
+            bUp.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.d(TAG, "Up");
+                    turnUp();
                 }
-                _winMgr.updateViewLayout(myView,layoutParams);
-            }
-        });
+            });
+            bDown.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.d(TAG, "Down");
+                    turnDown();
+                }
+            });
+            bLeft.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.d(TAG, "Left");
+                    turnLeft();
+                }
+            });
+            bRight.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.d(TAG, "Right");
+                    turnRight();
+                }
+            });
+            bClose.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.d(TAG, "Closing...");
+                    stopSelf();
+                }
+            });
+            bPause.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.d(TAG, "Pausing...");
+                    FrameLayout fl = (FrameLayout) myView.findViewById(R.id.controlButtons);
+                    if (View.VISIBLE == fl.getVisibility()) {
+                        fl.setVisibility(View.GONE);
+                        layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
+                        layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
+                    } else {
+                        fl.setVisibility(View.VISIBLE);
+                        layoutParams.height = controlHeight;
+                        layoutParams.width = WindowManager.LayoutParams.FILL_PARENT;
+                    }
+                    _winMgr.updateViewLayout(myView, layoutParams);
+                }
+            });
 
-        Log.d(TAG, "setOnTouchListener");
+            Log.d(TAG, "setOnTouchListener");
 
-        _winMgr.addView(myView, layoutParams);
-        Log.d(TAG, "_winMgr.addView");
+            _winMgr.addView(myView, layoutParams);
+            Log.d(TAG, "_winMgr.addView");
+        }
     }
     @Override
     public IBinder onBind(Intent intent) {
@@ -150,5 +162,71 @@ public class ControlService extends Service {
             }
         }
         Log.d(TAG, "onDestroy *** LEAVE ***");
+    }
+    public void turnLeft()  {
+        outMsg[0] = 'a';
+        outMsg[1] = 'a';
+        outMsg[2] = 'a';
+        outMsg[3] = 'a';
+        outMsg[4] = 'a';
+        try {
+            mS.getOutputStream().write(outMsg);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Log.i("TcpClient", "sent: " + outMsg.toString());
+    }
+
+    public void turnRight()  {
+        outMsg[0] = 'd';
+        outMsg[1] = 'd';
+        outMsg[2] = 'd';
+        outMsg[3] = 'd';
+        outMsg[4] = 'd';
+        try {
+            mS.getOutputStream().write(outMsg);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Log.i("TcpClient", "sent: " + outMsg.toString());
+    }
+
+    public void turnUp() {
+        outMsg[0] = 'w';
+        outMsg[1] = 'w';
+        outMsg[2] = 'w';
+        outMsg[3] = 'w';
+        outMsg[4] = 'w';
+        try {
+            mS.getOutputStream().write(outMsg);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Log.i("TcpClient", "sent: " + outMsg);
+    }
+
+
+    public void turnDown()  {
+        outMsg[0] = 's';
+        outMsg[1] = 's';
+        outMsg[2] = 's';
+        outMsg[3] = 's';
+        outMsg[4] = 's';
+        try {
+            mS.getOutputStream().write(outMsg);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Log.i("TcpClient", "sent: " + outMsg.toString());
+    }
+
+    @Override
+    public boolean stopService(Intent name) {
+        try {
+            mS.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return super.stopService(name);
     }
 }

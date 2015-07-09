@@ -24,22 +24,8 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true">
-
-            <EditText
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/editHeadIp"
-                android:hint="@string/ipHint"
-                android:text="192.168.1.255" />
-
-            <Button
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/connect"
-                android:id="@+id/buttonConnect"
-                android:textStyle="bold"
-                android:onClick="connectClick"/>
+            android:layout_alignParentLeft="true"
+            android:id="@+id/linearLayout">
 
             <Button
                 android:layout_width="fill_parent"
@@ -50,6 +36,7 @@
                 android:onClick="connectProxyClick"/>
 
         </LinearLayout>
+
     </RelativeLayout>
 
     <!--<FrameLayout-->
