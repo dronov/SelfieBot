@@ -197,26 +197,50 @@ public class TcpServer extends Activity {
 					Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', 'w');
 					textDisplay.setText("UP");
 					Log.i("TcpServer.Control", "UP");
+					Toast.makeText(getApplicationContext(),
+							"Command: UP ("+values[0][0]+")",
+							Toast.LENGTH_SHORT).show();
 					break;
 				case 97:
 					Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', 'a');
 					textDisplay.setText("LEFT");
 					Log.i("TcpServer.Control", "LEFT");
+					Toast.makeText(getApplicationContext(),
+							"Command: LEFT ("+values[0][0]+")",
+							Toast.LENGTH_SHORT).show();
 					break;
 				case 115:
 					Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', 's');
 					textDisplay.setText("DOWN");
 					Log.i("TcpServer.Control", "DOWN");
+					Toast.makeText(getApplicationContext(),
+							"Command: DOWN ("+values[0][0]+")",
+							Toast.LENGTH_SHORT).show();
 					break;
 				case 100:
 					Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', 'd');
 					textDisplay.setText("RIGHT");
+					Toast.makeText(getApplicationContext(),
+							"Command: RIGHT ("+values[0][0]+")",
+							Toast.LENGTH_SHORT).show();
 					Log.i("TcpServer.Control", "RIGHT");
 					break;
+				case 99:
+					Amarino.disconnect(getApplicationContext(), getMac());
+					textDisplay.setText("CLOSE CONNECTION");
+					Toast.makeText(getApplicationContext(),
+							"Command: CLOSE CONNECTION ("+values[0][0]+")",
+							Toast.LENGTH_SHORT).show();
+					finish();
+					Log.i("TcpServer.Control", "CLOSE CONNECTION");
+					break;
+				default:
+					Toast.makeText(getApplicationContext(),
+							"Unknown Command:"+values[0][0],
+							Toast.LENGTH_SHORT).show();
+					Log.i("TcpServer.Control", "Unknown Command:"+values[0][0]);
 			}
-			Toast.makeText(getApplicationContext(),
-					"Command:"+values[0][0],
-					Toast.LENGTH_SHORT).show();
+
 			//TODO: Передавать байтовые массивы "не вскрывая"
 //			Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', values[0]);
 		}
@@ -239,12 +263,7 @@ public class TcpServer extends Activity {
 				while (true){
 					serv.getInputStream().read(inMsg);
 					Log.i("TcpServer", "received: " + inMsg[0]);
-//				outMsg[0] = 's';
-//				s.getOutputStream().write(outMsg);
-//				Log.i("TcpServer", "sent: " + outMsg[0]);
-//				if(outMsg[0] == -1) break;
 					publishProgress(inMsg);
-
 				}
 			} catch (InterruptedIOException e) {
 				//if timeout occurs

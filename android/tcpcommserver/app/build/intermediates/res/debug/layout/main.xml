@@ -23,7 +23,8 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:id="@+id/ipAddr"
-        android:layout_weight="0.20" />
+        android:layout_weight="0.20"
+        android:visibility="gone" />
 
     <Button
         android:layout_width="fill_parent"
@@ -31,7 +32,8 @@
         android:text="@string/connectP2P"
         android:id="@+id/button2"
         android:layout_gravity="center_horizontal"
-        android:onClick="createLocalServer" />
+        android:onClick="createLocalServer"
+        android:visibility="gone" />
 
     <Button
         android:layout_width="fill_parent"

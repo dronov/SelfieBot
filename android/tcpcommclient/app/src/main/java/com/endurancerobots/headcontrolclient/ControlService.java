@@ -154,13 +154,14 @@ public class ControlService extends Service {
     }
     public void onDestroy(){
         Log.d(TAG, "onDestroy *** ENTER ***");
-        super.onDestroy();
+        quit();
         if (myView != null){
             if (_winMgr != null){
                 _winMgr.removeView(myView);
                 myView = null;
             }
         }
+        super.onDestroy();
         Log.d(TAG, "onDestroy *** LEAVE ***");
     }
     public void turnLeft()  {
@@ -219,14 +220,23 @@ public class ControlService extends Service {
         }
         Log.i("TcpClient", "sent: " + outMsg.toString());
     }
-
-    @Override
-    public boolean stopService(Intent name) {
+    public void quit()  {
+        outMsg[0] = 'q';
+        outMsg[1] = 'q';
+        outMsg[2] = 'q';
+        outMsg[3] = 'q';
+        outMsg[4] = 'q';
+        try {
+            mS.getOutputStream().write(outMsg);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         try {
             mS.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return super.stopService(name);
+        Toast.makeText(getApplicationContext(),"Connection closed",Toast.LENGTH_LONG).show();
+        Log.i("TcpClient", "sent: " + outMsg.toString());
     }
 }

@@ -88,4 +88,10 @@ public class TcpProxyClient extends Socket {
             return false;
         }
     }
+
+//    @Override
+//    public synchronized void close() throws IOException {
+//        this.getOutputStream().write((byte) 99);
+//        super.close();
+//    }
 }
