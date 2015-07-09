@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">ManyActivities</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="about_text">
+        У лукоморья дуб зелёный;\n
+        Златая цепь на дубе том:\n
+        И днём и ночью <b>кот учёный</b>\n
+        Всё ходит по цепи кругом;\n
+        Идёт <b>направо</b> - песнь заводит,\n
+        <b>Налево</b> - сказку говорит.</string>
+    <string name="about_title">О программе</string>
+    <string name="title_activity_second">SecondActivity</string>
+    <string name="description">Описание</string>
+    <string name="to">Кому</string>
+    <string name="send" >Передать</string>
+</resources>

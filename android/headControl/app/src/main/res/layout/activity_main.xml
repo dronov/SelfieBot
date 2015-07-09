@@ -46,4 +46,15 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:onClick="buttonDownOnCklick"/>
+
+    <EditText
+        android:layout_width="fill_parent"
+        android:layout_height="50sp"
+        android:id="@+id/editMac"
+        android:layout_above="@+id/bDown"
+        android:layout_alignEnd="@+id/bRight"
+        android:text="00:12:05:04:80:21"
+        android:inputType="text"
+        android:background="#79000000"
+        android:textColor="#ff00ff00" />
 </RelativeLayout>

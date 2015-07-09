@@ -49,20 +49,31 @@ public class MainActivity extends Activity {
 
     /**Using wasd-keys to control Head
      * 'A' - is identifier for device*/
-
+    private String getMac(){
+        EditText editText = (EditText)findViewById(R.id.editMac);
+        return editText.getText().toString();
+    }
     public void buttonLeftOnCklick(View view) {
-        Amarino.sendDataToArduino(getApplicationContext(), MAC, 'A', 'a');
+        Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', 'a');
     }
 
     public void buttonRightOnCklick(View view) {
-        Amarino.sendDataToArduino(getApplicationContext(), MAC, 'A', 'd');
+        Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', 'd');
     }
 
     public void buttonUpOnCklick(View view) {
-        Amarino.sendDataToArduino(getApplicationContext(), MAC, 'A', 'w');
+        byte bytes[] = new byte[5];
+        bytes[0]=119;
+        bytes[1]=119;
+        bytes[2]=119;
+        bytes[3]=119;
+        Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', 'w');
     }
 
     public void buttonDownOnCklick(View view) {
-        Amarino.sendDataToArduino(getApplicationContext(), MAC, 'A', 's');
+        byte bytes[] = new byte[5];
+        bytes[0]=115;
+        bytes[1]=115;
+        Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A',bytes);
     }
 }
