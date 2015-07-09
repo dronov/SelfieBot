@@ -73,7 +73,7 @@ public class TcpServer extends Activity {
 
 	private TextView textDisplay;
     private static final int TCP_SERVER_PORT = 4445;
-    MyTask mt;
+    MyTask mt = new MyTask();
     ServerSocket ss = null;
 	public Socket serv = new Socket();
 	byte inMsg[] = new byte[5];
@@ -85,28 +85,32 @@ public class TcpServer extends Activity {
 	}
 
 	public void connectViaProxy(View view) {
-		mt = new MyTask(false);
+		Log.i("TcpServer", "connectViaProxy");
+		mt.setIsLocal(false);
 		mt.execute();
 	}
 
 	public void createLocalServer(View view) {
 		serverIp = (TextView)findViewById(R.id.ipAddr);
-		serverIp.setText("IP:" + getLocalIpAddress());
+		serverIp.setText("Head IP: " + getLocalIpAddress());
+		Log.i("TcpServer", "createLocalServer");
 
-		mt = new MyTask(true);
+		mt.setIsLocal(true);
 		mt.execute();
 	}
 
 	class MyTask extends AsyncTask<Void, byte[], Void> {
-		private boolean isLocal=true;
+		private boolean isLocal;
 
-		public MyTask(boolean local){
-			isLocal=local;
+		public void setIsLocal(boolean isLocal) {
+			this.isLocal = isLocal;
+			Log.i("TcpServer", "isLocal set to "+isLocal);
 		}
+
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
-			if(isLocal)
+			if(isLocal) {
 				try {
 					ss = new ServerSocket(TCP_SERVER_PORT);
 				} catch (IOException e) {
@@ -115,9 +119,10 @@ public class TcpServer extends Activity {
 				Log.i("TcpServer", "Server started.\nHost: " +
 						ss.getLocalSocketAddress().toString());
 				Toast.makeText(getApplicationContext(),
-						"Server started.\nHost: "+
-						ss.getLocalSocketAddress().toString(),
+						"Server started.\nHost: " +
+								ss.getLocalSocketAddress().toString(),
 						Toast.LENGTH_LONG).show();
+			}
 		}
 
 		@Override
@@ -130,9 +135,10 @@ public class TcpServer extends Activity {
 				}
 				runTcpServer();
 			}
-			else
-				if(connectToOperator())
+			else {
+				if (connectToOperator())
 					runTcpServer();
+			}
 			return null;
 		}
 
@@ -188,18 +194,22 @@ public class TcpServer extends Activity {
 			textDisplay.setText(values[0].toString());
 			switch (values[0][0]) {
 				case 119:
+					Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', 'w');
 					textDisplay.setText("UP");
 					Log.i("TcpServer.Control", "UP");
 					break;
 				case 97:
+					Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', 'a');
 					textDisplay.setText("LEFT");
 					Log.i("TcpServer.Control", "LEFT");
 					break;
 				case 115:
+					Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', 's');
 					textDisplay.setText("DOWN");
 					Log.i("TcpServer.Control", "DOWN");
 					break;
 				case 100:
+					Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', 'd');
 					textDisplay.setText("RIGHT");
 					Log.i("TcpServer.Control", "RIGHT");
 					break;
@@ -207,7 +217,8 @@ public class TcpServer extends Activity {
 			Toast.makeText(getApplicationContext(),
 					"Command:"+values[0][0],
 					Toast.LENGTH_SHORT).show();
-			Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', values[0]);
+			//TODO: Передавать байтовые массивы "не вскрывая"
+//			Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', values[0]);
 		}
 
 		@Override
