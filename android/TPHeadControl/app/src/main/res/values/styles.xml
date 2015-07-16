@@ -1,0 +1,12 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="android:Theme.Light">
+        <!-- Customize your theme here. -->
+
+    </style>
+
+    <style name="KeyControlsTheme" parent="android:Theme.Translucent">
+    </style>
+
+</resources>

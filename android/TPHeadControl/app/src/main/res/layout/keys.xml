@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="@dimen/controls_width" android:layout_height="@dimen/controls_height"
+    android:theme="@style/KeyControlsTheme">
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="_"
+            android:id="@+id/bPause"
+            android:layout_gravity="left|top" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/controlButtons"
+        android:layout_gravity="right|bottom">
+
+        <Button
+            android:layout_width="@dimen/button_width"
+            android:layout_height="@dimen/button_height"
+            android:text="@string/down"
+            android:id="@+id/bDown"
+            android:layout_gravity="center_horizontal|bottom" />
+
+        <Button
+            android:layout_width="@dimen/button_width"
+            android:layout_height="@dimen/button_height"
+            android:text="@string/left"
+            android:id="@+id/bLeft"
+            android:layout_gravity="left|bottom" />
+
+        <Button
+            android:layout_width="@dimen/button_width"
+            android:layout_height="@dimen/button_height"
+            android:text="@string/right"
+            android:id="@+id/bRight"
+            android:layout_gravity="right|bottom" />
+
+        <Button
+            android:layout_width="@dimen/button_width"
+            android:layout_height="@dimen/button_height"
+            android:text="@string/Up"
+            android:id="@+id/bUp"
+            android:layout_gravity="center" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="X"
+            android:id="@+id/bClose"
+            android:layout_gravity="right|top" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="control"
+            android:id="@+id/cmdDebug"
+            android:layout_gravity="center_horizontal|top" />
+
+    </FrameLayout>
+
+</FrameLayout>
