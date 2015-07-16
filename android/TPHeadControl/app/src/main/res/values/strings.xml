@@ -20,5 +20,10 @@
     <string name="connectionproxynot">Невозможно подключиться\nк прокси-серверу</string>
     <string name="connectionproxy">Успешное подключение\nчерез прокси-сервер</string>
     <string name="pausing">Pausing...</string>
+    <string name="button_scan">Поиск устройств</string>
+    <string name="title_other_devices">Другие устройства</string>
+    <string name="title_paired_devices">Доступные устройства</string>
+    <string name="holderMacAddr">mac-адрес подставки</string>
+    <string name="chooseDevice">Выберите устройство</string>
 
 </resources>

@@ -3,5 +3,4 @@
     <style name="AppTheme" parent="android:Theme.Material.Light">
     </style>
 
-    <style name="KeyControlsTheme">keyControlsTheme</style>
 </resources>

@@ -1,18 +1,33 @@
 package com.endurancerobots.tpheadcontrol;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.FragmentManager;
+import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.PopupMenu;
+import android.widget.Toast;
+
+import at.abraxas.amarino.Amarino;
 
 public class MainActivity extends Activity {
 
     private static final String TAG = "MainActivity";
     private String headId;
+    private ArrayAdapter<String> mNewDevicesArrayAdapter;
+    private BluetoothAdapter mBtAdapter;
+    private BroadcastReceiver mReceiver;
+    private String macAddr;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,8 +62,29 @@ public class MainActivity extends Activity {
     }
 
     public void makeServerOnClick(View view) {
-        ServoControlService.startServoControl(getApplicationContext(),getHeadId(),getMac());
+        FragmentManager manager = getFragmentManager();
+        DeviceChooserDialog deviceChooser  =new DeviceChooserDialog();
+        deviceChooser.show(manager,"Device choosing");
+
+        ServoControlService.startServoControl(getApplicationContext(), getHeadId(), getMac());
     }
+//
+//    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+//    private void showPopupMenu(View view) {
+//        PopupMenu popupMenu = new PopupMenu(this, view);
+//        popupMenu.getMenuInflater().inflate(R.menu.devices, popupMenu.getMenu());
+//        popupMenu.getMenu().add("00:12:05:04:80:21");
+//        popupMenu.getMenu().add("FF:88:88:99:88");
+//        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+//            @Override
+//            public boolean onMenuItemClick(MenuItem item) {
+//                Toast.makeText(getApplicationContext(),item.getTitle(),Toast.LENGTH_SHORT).show();
+//                macAddr=item.getTitle().toString();
+//                return false;
+//            }
+//        });
+//        popupMenu.show();
+//    }
 
     private static final String ACTION_START_CONTROLS = "com.endurancerobots.tpheadcontrol.action.START_CONTROLS";
 
@@ -64,10 +100,16 @@ public class MainActivity extends Activity {
     }
 
     private String getMac(){
-        return "98:D3:31:90:42:C9";
+        return macAddr;
     }
+
     public String getHeadId() {
         EditText editText = (EditText) findViewById(R.id.headId);
         return  editText.getText().toString();
+    }
+
+
+    public void deviceChoosed(String mac) {
+        macAddr=mac;
     }
 }

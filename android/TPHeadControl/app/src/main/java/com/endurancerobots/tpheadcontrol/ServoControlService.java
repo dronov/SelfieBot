@@ -58,6 +58,7 @@ public class ServoControlService extends IntentService {
         macAddr = mac;
         serv = new TcpProxyClient();
         String answ="";
+        Amarino.connect(getApplicationContext(),macAddr);
         while(!answ.contains("CLOSE"))
             if(serv.connectAsServer(headId))
                 answ=runTcpServer();
@@ -126,5 +127,11 @@ public class ServoControlService extends IntentService {
 
     public String getMac() {
         return macAddr;
+    }
+
+    @Override
+    public void onDestroy() {
+        Amarino.disconnect(getApplicationContext(),getMac());
+        super.onDestroy();
     }
 }

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/title_holder_mac"
+        android:title="@string/holderMacAddr"
+        android:enabled="false"/>
+</menu>
