@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/tcpcommclient.iml" filepath="$PROJECT_DIR$/tcpcommclient.iml" />
+      <module fileurl="file://$USER_HOME$/servo/android/tcpcommclient/app/app.iml" filepath="$USER_HOME$/servo/android/tcpcommclient/app/app.iml" />
+      <module fileurl="file://$USER_HOME$/servo/android/tcpcommclient/tcpcommclient.iml" filepath="$USER_HOME$/servo/android/tcpcommclient/tcpcommclient.iml" />
     </modules>
   </component>
 </project>

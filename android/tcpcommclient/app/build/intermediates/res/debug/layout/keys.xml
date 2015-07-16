@@ -56,6 +56,13 @@
             android:id="@+id/bClose"
             android:layout_gravity="right|top" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="control"
+            android:id="@+id/cmdDebug"
+            android:layout_gravity="center_horizontal|top" />
+
     </FrameLayout>
 
 </FrameLayout><!-- From: file:/home/ilya/servo/android/tcpcommclient/app/src/main/res/layout/keys.xml -->

@@ -9,4 +9,5 @@
     <string name="connectP2P">Создать локальный сервер</string>
     <string name="connectProxy">Соединение с прокси-сервером</string>
     <string name="hello">Now you can connect to me</string>
+    <string name="serverClosed">Соединение с сервером прекращено. Порт:</string>
 </resources>

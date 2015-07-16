@@ -1,55 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical"
-    android:weightSum="1">
+    android:layout_height="fill_parent">
 
-    <TextView
-        android:id="@+id/text1"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/hello" />
+        <ImageView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:id="@+id/imageView"
+            android:src="@drawable/edur_short_logo"
+            android:background="#ffffffff" />
 
-    <EditText
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/editArduinoMac"
-        android:layout_gravity="center_horizontal"
-        android:text="00:12:05:04:80:21" />
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:weightSum="1"
+            android:background="#00ffffff"
+            android:theme="@android:style/Theme.Translucent"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true">
+        <TextView
+            android:id="@+id/text1"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/hello"
+            android:textColor="@android:color/darker_gray" />
 
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:id="@+id/ipAddr"
-        android:layout_weight="0.20"
-        android:visibility="gone" />
+        <EditText
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/editArduinoMac"
+            android:layout_gravity="center_horizontal"
+            android:text="98:D3:31:90:42:C9" />
 
-    <Button
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/connectP2P"
-        android:id="@+id/button2"
-        android:layout_gravity="center_horizontal"
-        android:onClick="createLocalServer"
-        android:visibility="gone" />
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:id="@+id/ipAddr"
+            android:layout_weight="0.20"
+            android:visibility="gone" />
 
-    <Button
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/connectProxy"
-        android:id="@+id/button"
-        android:layout_gravity="center_horizontal"
-        android:onClick="connectViaProxy"/>
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/connectP2P"
+            android:id="@+id/button2"
+            android:layout_gravity="center_horizontal"
+            android:onClick="createLocalServer"
+            android:visibility="gone" />
 
-    <Button
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="Run in Background"
-        android:id="@+id/buttonBackground"
-        android:onClick="buttonBackgroundOnClick"
-        android:layout_weight="0.13"
-        android:clickable="true" />
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/connectProxy"
+            android:id="@+id/button"
+            android:layout_gravity="center_horizontal"
+            android:onClick="connectViaProxy"/>
 
-</LinearLayout><!-- From: file:/home/ilya/servo/android/tcpcommserver/app/src/main/res/layout/main.xml -->
+            <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Run in Background"
+            android:id="@+id/buttonBackground"
+            android:onClick="buttonBackgroundOnClick"
+            android:clickable="true"
+                android:layout_gravity="center_horizontal" />
+
+            <Button
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="exit"
+                android:id="@+id/bExit"
+                android:layout_gravity="right"
+                android:onClick="exit"/>
+
+        </LinearLayout>
+</RelativeLayout><!-- From: file:/home/ilya/servo/android/tcpcommserver/app/src/main/res/layout/main.xml -->

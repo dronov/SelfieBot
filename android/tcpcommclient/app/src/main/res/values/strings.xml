@@ -14,5 +14,6 @@
     <string name="connectionp2pnot">Невозможно подключиться к серверу</string>
     <string name="connectionproxynot">Невозможно подключиться\nк прокси-серверу</string>
     <string name="connectionproxy">Успешное подключение\nчерез прокси-сервер</string>
+    <string name="pausing">Pausing...</string>
 
 </resources>

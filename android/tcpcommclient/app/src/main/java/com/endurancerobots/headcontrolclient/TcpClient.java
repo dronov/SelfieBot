@@ -59,115 +59,16 @@ public class TcpClient extends Activity {
      * Connection to server
      * @param view
      */
-//    public void connectClick(View view) {
-//        EditText editHeadIp = (EditText)findViewById(R.id.editHeadIp);
-//        mS = new TcpProxyClient();
-//        boolean connected = mS.runTcpClient(editHeadIp.getText().toString(), TCP_SERVER_PORT);
-//        Log.i("TcpClient","P2PConnect");
-//        if(connected){
-//            hideUI();
-//            Toast.makeText(getApplicationContext(),
-//                    getString(R.string.connectionp2p), Toast.LENGTH_SHORT).show();
-//        }
-//        else {
-//            Toast.makeText(getApplicationContext(),
-//                    getString(R.string.connectionp2pnot), Toast.LENGTH_SHORT).show();
-//        }
-//    }
     public void connectProxyClick(View view) {
         hideUI();
-//        mS = new TcpProxyClient();
-//        boolean connected = mS.runTcpProxyClient(PROXY_IP, TCP_PROXY_SERVER_PORT);
-//        Log.i("TcpClient","ProxyConnect");
-//        if(connected){
-//            hideUI();
-//            Toast.makeText(getApplicationContext(),
-//                    getString(R.string.connectionproxy), Toast.LENGTH_SHORT).show();
-//        }
-//        else {
-//            Toast.makeText(getApplicationContext(),
-//                    getString(R.string.connectionproxynot), Toast.LENGTH_SHORT).show();
-//        }
     }
-    String ERROR = "\r\nERROR\r\n";
-    String WAIT = "\r\nWAIT\r\n";
-    String CONNECT = "\r\nCONNECT\r\n";
-    String strId = "G123456789\r";
-    private byte inputBuf[] = new byte[50];
 
-//    /**
-//     * Connection with proxy client
-//     * @param proxyIp - ip-address of server
-//     * @param proxyServerPort - destination port
-//     * @return true if connection is successful
-//     */
-//    private boolean runTcpProxyClient(String proxyIp, int proxyServerPort) {
-//        String s="";
-//            if (runTcpClient(proxyIp, proxyServerPort)) {
-//                while (!s.contains(CONNECT))
-//                try {
-//                    BufferedWriter out = new BufferedWriter(new OutputStreamWriter(mS.getOutputStream()));
-//                    /// Send id-string
-//                    out.write(strId);
-//                    out.flush();
-//                    Log.i("TcpClient.proxy", "Send id-string '" + strId + "'");
-//                    /// Receive answer
-//                    BufferedReader in = new BufferedReader(new InputStreamReader(mS.getInputStream()));
-//                    mS.getInputStream().read(inputBuf);
-//                    Log.i("TcpClient.proxy", "Receive answer: " + inputBuf);
-//                    ///Analize string
-//                    s = new String(inputBuf, "UTF-8");
-//                    Log.i("TcpClient.proxy", "Convert answer: " + s);
-//                    if (s.contains(CONNECT)) {
-//                        Log.i("TcpClient.proxy", CONNECT);
-//                        return true;
-//                    } else if (s.contains(WAIT)) {
-//                        Log.i("TcpClient.proxy", WAIT);
-////                        wait(500);
-//                        continue;
-//                    } else if (s.contains(ERROR)) {
-//                        Log.e("TcpClient.proxy", ERROR);
-//                        return false;
-//                    } else {
-//                        Log.i("TcpClient.proxy", "Got only: " + inputBuf.toString());
-//                        return false;
-//                    }
-//                } catch (UnsupportedEncodingException e) {
-//                    e.printStackTrace();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        return false;
-//    }
 
     private void hideUI() {
         /** Make UI transparent to see the Skype, Linphone etc...*/
-//        RelativeLayout connectionUILayout = (RelativeLayout) findViewById(R.id.connectionUI);
-//        connectionUILayout.setVisibility(View.INVISIBLE);
         finish();
         startService(_serviceIntent);
     }
-//    /**
-//     * @param host - server ip-address
-//     * @param port - server port
-//     * @return true - with successful connection, else return "false"
-//     */
-//    private boolean runTcpClient(String host, int port) {
-//        try {
-//            mS.connect(new InetSocketAddress(host, port));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            return false;
-//        }
-//        if (mS.isConnected()) {
-//            Log.i("TcpClient", "Successful connection to " + host + ":"+port);
-//            return true;
-//        } else {
-//            Log.i("TcpClient", "Can't connect to server" + host + ":"+port);
-//            return false;
-//        }
-//    }
 
 	//replace runTcpClient() at onCreate with this method if you want to run tcp client as a service
 	private void runTcpClientAsService() {

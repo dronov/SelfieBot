@@ -15,7 +15,9 @@ public final class R {
         public static final int activity_vertical_margin=0x7f050001;
         public static final int button_height=0x7f050002;
         public static final int button_width=0x7f050003;
-        public static final int smallButton=0x7f050004;
+        public static final int controls_height=0x7f050004;
+        public static final int controls_width=0x7f050005;
+        public static final int smallButton=0x7f050006;
     }
     public static final class drawable {
         public static final int edur_short_logo=0x7f020000;
@@ -27,11 +29,12 @@ public final class R {
         public static final int bPause=0x7f080000;
         public static final int bRight=0x7f080004;
         public static final int bUp=0x7f080005;
-        public static final int buttonProxyConnect=0x7f08000a;
-        public static final int connectionUI=0x7f080007;
+        public static final int buttonProxyConnect=0x7f08000b;
+        public static final int cmdDebug=0x7f080007;
+        public static final int connectionUI=0x7f080008;
         public static final int controlButtons=0x7f080001;
-        public static final int imageView=0x7f080008;
-        public static final int linearLayout=0x7f080009;
+        public static final int imageView=0x7f080009;
+        public static final int linearLayout=0x7f08000a;
     }
     public static final class layout {
         public static final int keys=0x7f040000;
@@ -52,8 +55,9 @@ public final class R {
         public static final int hello=0x7f060008;
         public static final int ipHint=0x7f060009;
         public static final int left=0x7f06000a;
-        public static final int right=0x7f06000b;
-        public static final int сonnectproxy=0x7f06000c;
+        public static final int pausing=0x7f06000b;
+        public static final int right=0x7f06000c;
+        public static final int сonnectproxy=0x7f06000d;
     }
     public static final class style {
         public static final int Theme_Transparent=0x7f070000;

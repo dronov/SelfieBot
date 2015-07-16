@@ -5,5 +5,6 @@
     <string name="app_name">Head Control (Server)</string>
     <string name="connectProxy">Соединение с прокси-сервером</string>
     <string name="connectP2P">Создать локальный сервер</string>
+    <string name="serverClosed">Соединение с сервером прекращено. Порт:</string>
 
 </resources>

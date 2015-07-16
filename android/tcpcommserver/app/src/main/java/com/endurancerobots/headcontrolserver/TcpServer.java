@@ -17,6 +17,7 @@ import java.util.Enumeration;
 
 import android.app.Activity;
 
+import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -31,15 +32,8 @@ import at.abraxas.amarino.Amarino;
 
 
 public class TcpServer extends Activity {
+	private static final String TAG = "TcpServer";
 	private TextView serverIp;
-	public String proxyIp="46.38.49.133";
-	public int proxyServerPort=4445;
-	//proxy protocol
-	public String CONNECT="\r\nCONNECT\r\n";
-	public String WAIT="\r\nWAIT\r\n";
-	public String ERROR="\r\nERROR\r\n";
-
-
 	/** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -71,13 +65,7 @@ public class TcpServer extends Activity {
 		return Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
 	}
 
-	private TextView textDisplay;
-    private static final int TCP_SERVER_PORT = 4445;
-    MyTask mt = new MyTask();
-    ServerSocket ss = null;
-	public Socket serv = new Socket();
-	byte inMsg[] = new byte[5];
-	byte outMsg[] = new byte[5];
+	public TextView textDisplay;
 
 
 	public void buttonBackgroundOnClick(View view) {
@@ -85,200 +73,25 @@ public class TcpServer extends Activity {
 	}
 
 	public void connectViaProxy(View view) {
-		Log.i("TcpServer", "connectViaProxy");
-		mt.setIsLocal(false);
-		mt.execute();
+		Log.i(TAG, "connectViaProxy");
+		/**
+		 * Start server
+		 */
+		TcpProxyService.startActionFoo(getApplicationContext(), "987654321", getMacAddr());
 	}
 
 	public void createLocalServer(View view) {
 		serverIp = (TextView)findViewById(R.id.ipAddr);
 		serverIp.setText("Head IP: " + getLocalIpAddress());
-		Log.i("TcpServer", "createLocalServer");
-
-		mt.setIsLocal(true);
-		mt.execute();
+		Log.i(TAG, "createLocalServer");
 	}
-
-	class MyTask extends AsyncTask<Void, byte[], Void> {
-		private boolean isLocal;
-
-		public void setIsLocal(boolean isLocal) {
-			this.isLocal = isLocal;
-			Log.i("TcpServer", "isLocal set to "+isLocal);
-		}
-
-		@Override
-		protected void onPreExecute() {
-			super.onPreExecute();
-			if(isLocal) {
-				try {
-					ss = new ServerSocket(TCP_SERVER_PORT);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				Log.i("TcpServer", "Server started.\nHost: " +
-						ss.getLocalSocketAddress().toString());
-				Toast.makeText(getApplicationContext(),
-						"Server started.\nHost: " +
-								ss.getLocalSocketAddress().toString(),
-						Toast.LENGTH_LONG).show();
-			}
-		}
-
-		@Override
-		protected Void doInBackground(Void... Voids) {
-			if(isLocal) {
-				try {
-					serv = ss.accept();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				runTcpServer();
-			}
-			else {
-				if (connectToOperator())
-					runTcpServer();
-			}
-			return null;
-		}
-
-		private boolean connectToOperator() {
-			String s="";
-			try {
-				serv.connect(new InetSocketAddress(proxyIp, proxyServerPort));
-			}catch (IOException e){
-				e.printStackTrace();
-			}
-			if (serv.isConnected()) {
-				while (!s.contains(CONNECT))
-					try {
-						String strId = "S123456789\r";
-						/// Send id-string
-						BufferedWriter out = new BufferedWriter(new OutputStreamWriter(serv.getOutputStream()));
-						out.write(strId);
-						out.flush();
-						Log.i("TcpClient.proxy", "Send id-string '" + strId + "'");
-						/// Receive answer
-						BufferedReader in = new BufferedReader(new InputStreamReader(serv.getInputStream()));
-						byte[] inputBuf=new byte[50];
-						serv.getInputStream().read(inputBuf);
-						Log.i("TcpClient.proxy", "Receive answer: " + inputBuf);
-						///Analize string
-						s = new String(inputBuf, "UTF-8");
-						Log.i("TcpClient.proxy", "Convert answer: " + s);
-						if (s.contains(CONNECT)) {
-							Log.i("TcpClient.proxy", CONNECT);
-							return true;
-						} else if (s.contains(WAIT)) {
-							Log.i("TcpClient.proxy", WAIT);
-//                        wait(500);
-							continue;
-						} else if (s.contains(ERROR)) {
-							Log.e("TcpClient.proxy", ERROR);
-							return false;
-						} else {
-							Log.i("TcpClient.proxy", "Got only: " + inputBuf.toString());
-							return false;
-						}
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-			}
-			return false;
-		}
-
-
-		@Override
-		protected void onProgressUpdate(byte[]... values) {
-			super.onProgressUpdate(values);
-			textDisplay.setText(values[0].toString());
-			switch (values[0][0]) {
-				case 119:
-					Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', 'w');
-					textDisplay.setText("UP");
-					Log.i("TcpServer.Control", "UP");
-					Toast.makeText(getApplicationContext(),
-							"Command: UP ("+values[0][0]+")",
-							Toast.LENGTH_SHORT).show();
-					break;
-				case 97:
-					Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', 'a');
-					textDisplay.setText("LEFT");
-					Log.i("TcpServer.Control", "LEFT");
-					Toast.makeText(getApplicationContext(),
-							"Command: LEFT ("+values[0][0]+")",
-							Toast.LENGTH_SHORT).show();
-					break;
-				case 115:
-					Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', 's');
-					textDisplay.setText("DOWN");
-					Log.i("TcpServer.Control", "DOWN");
-					Toast.makeText(getApplicationContext(),
-							"Command: DOWN ("+values[0][0]+")",
-							Toast.LENGTH_SHORT).show();
-					break;
-				case 100:
-					Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', 'd');
-					textDisplay.setText("RIGHT");
-					Toast.makeText(getApplicationContext(),
-							"Command: RIGHT ("+values[0][0]+")",
-							Toast.LENGTH_SHORT).show();
-					Log.i("TcpServer.Control", "RIGHT");
-					break;
-				case 99:
-					Amarino.disconnect(getApplicationContext(), getMac());
-					textDisplay.setText("CLOSE CONNECTION");
-					Toast.makeText(getApplicationContext(),
-							"Command: CLOSE CONNECTION ("+values[0][0]+")",
-							Toast.LENGTH_SHORT).show();
-					finish();
-					Log.i("TcpServer.Control", "CLOSE CONNECTION");
-					break;
-				default:
-					Toast.makeText(getApplicationContext(),
-							"Unknown Command:"+values[0][0],
-							Toast.LENGTH_SHORT).show();
-					Log.i("TcpServer.Control", "Unknown Command:"+values[0][0]);
-			}
-
-			//TODO: Передавать байтовые массивы "не вскрывая"
-//			Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', values[0]);
-		}
-
-		@Override
-		protected void onPostExecute(Void aVoid) {
-			super.onPostExecute(aVoid);
-			try {
-				serv.close();
-				ss.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			Log.i("TcpServer", "Server closed");
-			Toast.makeText(getApplicationContext(),
-					"Server closed on port: " + TCP_SERVER_PORT, Toast.LENGTH_SHORT).show();
-		}
-		private void runTcpServer() {
-			try {
-				while (true){
-					serv.getInputStream().read(inMsg);
-					Log.i("TcpServer", "received: " + inMsg[0]);
-					publishProgress(inMsg);
-				}
-			} catch (InterruptedIOException e) {
-				//if timeout occurs
-				e.printStackTrace();
-			} catch (SocketException se){
-				se.printStackTrace();
-				Log.i("TcpServer", "client cuts wire!!! ");
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	private String getMac() {
+	private String getMacAddr() {
 		EditText editText = (EditText)findViewById(R.id.editArduinoMac);
 		return editText.getText().toString();
+	}
+
+	public void exit(View view) {
+		stopService(new Intent(getApplicationContext(), TcpProxyService.class));
+		finish();
 	}
 }
