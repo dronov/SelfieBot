@@ -50,9 +50,9 @@ public class MainActivity extends Activity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }else
+//        if (id == R.id.action_settings) {
+//            return true;
+//        }else
         if (id == R.id.exit) {
             finish();
             return true;
@@ -71,23 +71,6 @@ public class MainActivity extends Activity {
 
         ServoControlService.startServoControl(getApplicationContext(), getHeadId(), getMac());
     }
-//
-//    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-//    private void showPopupMenu(View view) {
-//        PopupMenu popupMenu = new PopupMenu(this, view);
-//        popupMenu.getMenuInflater().inflate(R.menu.devices, popupMenu.getMenu());
-//        popupMenu.getMenu().add("00:12:05:04:80:21");
-//        popupMenu.getMenu().add("FF:88:88:99:88");
-//        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-//            @Override
-//            public boolean onMenuItemClick(MenuItem item) {
-//                Toast.makeText(getApplicationContext(),item.getTitle(),Toast.LENGTH_SHORT).show();
-//                macAddr=item.getTitle().toString();
-//                return false;
-//            }
-//        });
-//        popupMenu.show();
-//    }
 
     private static final String ACTION_START_CONTROLS = "com.endurancerobots.tpheadcontrol.action.START_CONTROLS";
 
