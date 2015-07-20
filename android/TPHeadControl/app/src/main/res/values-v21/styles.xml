@@ -3,4 +3,7 @@
     <style name="AppTheme" parent="android:Theme.Material.Light">
     </style>
 
+    <style name="KeyControlsTheme" parent="android:Theme.Translucent">
+        <item name="android:alpha">50</item>
+    </style>
 </resources>

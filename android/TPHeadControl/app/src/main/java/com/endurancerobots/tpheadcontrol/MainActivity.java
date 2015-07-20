@@ -27,7 +27,7 @@ public class MainActivity extends Activity {
     private ArrayAdapter<String> mNewDevicesArrayAdapter;
     private BluetoothAdapter mBtAdapter;
     private BroadcastReceiver mReceiver;
-    private String macAddr;
+    private String macAddr="";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,9 +52,12 @@ public class MainActivity extends Activity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
-        }
+        }else
         if (id == R.id.exit) {
             finish();
+            return true;
+        }else if(id == R.id.about){
+            startActivity(new Intent(getApplicationContext(),AboutActivity.class));
             return true;
         }
 
