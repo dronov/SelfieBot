@@ -1,8 +1,9 @@
 package com.endurancerobots.tpheadcontrol;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.FragmentManager;
+//import android.app.FragmentManager;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentActivity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
@@ -20,7 +21,7 @@ import android.widget.Toast;
 
 import at.abraxas.amarino.Amarino;
 
-public class MainActivity extends Activity {
+public class MainActivity extends FragmentActivity {
 
     private static final String TAG = "MainActivity";
     private String headId;
@@ -65,10 +66,13 @@ public class MainActivity extends Activity {
     }
 
     public void makeServerOnClick(View view) {
-        FragmentManager manager = getFragmentManager();
+        FragmentManager manager = getSupportFragmentManager();
         DeviceChooserDialog deviceChooser  =new DeviceChooserDialog();
-        deviceChooser.show(manager,"Device choosing");
-
+        deviceChooser.show(manager, "Device choosing");
+        /** see deviceChoosed */
+    }
+    public void deviceChoosed(String mac) {
+        macAddr=mac;
         ServoControlService.startServoControl(getApplicationContext(), getHeadId(), getMac());
     }
 
@@ -95,7 +99,5 @@ public class MainActivity extends Activity {
     }
 
 
-    public void deviceChoosed(String mac) {
-        macAddr=mac;
-    }
+
 }

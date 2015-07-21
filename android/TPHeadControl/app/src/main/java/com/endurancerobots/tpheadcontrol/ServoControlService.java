@@ -1,8 +1,15 @@
 package com.endurancerobots.tpheadcontrol;
 
 import android.app.IntentService;
+//import android.app.Notification;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -22,6 +29,9 @@ public class ServoControlService extends IntentService {
     private String macAddr;
     private TcpProxyClient serv;
     private byte[] inMsg=new byte[5];
+    private Handler handler;
+    private int NOTIFY_ID=101;
+    private Context context;
 
     public static void startServoControl(Context context, String headId_, String mac_) {
         Log.v(TAG, "startServoControl");
@@ -60,8 +70,10 @@ public class ServoControlService extends IntentService {
         String answ="";
         Amarino.connect(getApplicationContext(),macAddr);
         while(!answ.contains("CLOSE"))
-            if(serv.connectAsServer(headId))
-                answ=runTcpServer();
+            if(serv.connectAsServer(headId)) {
+                publishProgress(getString(R.string.successful_connect));
+                answ = runTcpServer();
+            }
         try {
             if(serv != null)
                 serv.close();
@@ -69,11 +81,12 @@ public class ServoControlService extends IntentService {
             Log.e(TAG, "error while closing server: "+e.getMessage());
         }
         Log.i(TAG, "Server closed");
+        publishProgress(getString(R.string.server_closed));
+        stopSelf();
     }
 
     private String runTcpServer() {
         Log.v(TAG, "runTcpServer");
-        Log.d(TAG, "runTcpServer");
         try {
             while (true){
                 int read = serv.getInputStream().read(inMsg);
@@ -112,18 +125,37 @@ public class ServoControlService extends IntentService {
         } catch (SocketException se){
             if(se.getMessage().contains("ECONNRESET")){
                 Log.e(TAG, "client cuts wire!!! " + se.getMessage() + "!!!");
+                publishProgress(getString(R.string.connection_cutted));
             } else{
-                Log.e(TAG, "problem woth socket"+se.getMessage());}
+                Log.e(TAG, "problem with socket"+se.getMessage());}
         } catch (IOException e) {
             Log.e(TAG, "IOException: " + e.getMessage() + "!!!");
+            Toast.makeText(getApplicationContext(),"problem with socket",Toast.LENGTH_SHORT).show();
         }
         return "PROBLEM";
     }
 
     private void publishProgress(String s) {
-        Toast.makeText(getApplicationContext(),s,Toast.LENGTH_SHORT).show();
-        Log.i(TAG,s);
+        Log.i(TAG, s);
+
+        /** Make notification */
+        Intent notificationIntent = new Intent();
+        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0,
+                notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        builder.setContentIntent(pendingIntent)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setTicker(s)
+                .setContentTitle(getString(R.string.app_name))
+                .setContentText(s); // Текст уведомления
+
+        Notification notification = builder.build();
+        notificationManager.notify(NOTIFY_ID, notification);
     }
+
+
 
     public String getMac() {
         return macAddr;
@@ -134,4 +166,7 @@ public class ServoControlService extends IntentService {
         Amarino.disconnect(getApplicationContext(),getMac());
         super.onDestroy();
     }
+
+
+
 }

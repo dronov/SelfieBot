@@ -2,11 +2,10 @@ package com.endurancerobots.tpheadcontrol;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
+import android.support.v4.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.widget.Toast;
-//import android.support.v4.*;
 /**
  * Created by ilya on 16.07.15.
  */
@@ -24,7 +23,7 @@ public class DeviceChooserDialog extends DialogFragment {
                     public void onClick(DialogInterface dialog, int which) {
                         ((MainActivity) getActivity()).deviceChoosed(bluetoothMacAddr[which]);
                         Toast.makeText(getActivity(),
-                                "Выбрано: " + bluetoothMacAddr[which],
+                                getString(R.string.choosed) + bluetoothMacAddr[which],
                                 Toast.LENGTH_SHORT).show();
                     }
                 });

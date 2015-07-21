@@ -29,9 +29,14 @@
     <string name="title_activity_about">AboutActivity</string>
     <string name="about_text">
         Это программа для управления подставкой под мобильный телефон.
-        Для связи с подставкой вам необходимо скачать и установить дополнительное приложение Amarino
+        Для связи с подставкой вам необходимо скачать и установить дополнительное приложение Amarino\n
         <a href="https://amarino.googlecode.com/files/Amarino_2_v0_55.apk" >Скачать Amarino</a>
     </string>
     <string name="about">Помощь</string>
+    <string name="choosed">"Выбрано: "</string>
+    <string name="server_closed">Сервер закрыт</string>
+    <string name="connection_cutted">Соединение разорвано</string>
+    <string name="successful_connect">Успешное подключение</string>
+    <string name="connection_closed">Соединение закрыто</string>
 
 </resources>

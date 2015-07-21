@@ -101,6 +101,33 @@ public class UIControlService extends Service {
         sth.execute();
     }
 
+    private void setupLayout() {
+        /*******Setup layout**************************/
+        final int LayoutParamFlags = WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
+                | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+        layoutParams = new WindowManager.LayoutParams(
+                controlWidth,
+                controlHeight,
+                0,0, // coords
+                WindowManager.LayoutParams.TYPE_PRIORITY_PHONE,
+                LayoutParamFlags,
+                PixelFormat.TRANSLUCENT);
+        layoutParams.gravity = Gravity.END | Gravity.BOTTOM;
+        Log.d(TAG, "layoutParams");
+
+        layoutInflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        Log.d(TAG, "layoutInflater");
+
+        _winMgr = (WindowManager) getSystemService(WINDOW_SERVICE);
+
+        myView = layoutInflater.inflate(R.layout.keys, null);
+        Log.d(TAG, "layoutInflater");
+        /*******Setup window**************************/
+        _winMgr.addView(myView, layoutParams);
+        Log.d(TAG, "_winMgr.addView");
+    }
+
     private void setupClicks() {
         /*******Setup clicks**************************/
         bUp = (Button) myView.findViewById(R.id.bUp);
@@ -154,44 +181,18 @@ public class UIControlService extends Service {
                 FrameLayout fl = (FrameLayout) myView.findViewById(R.id.controlButtons);
                 if (View.VISIBLE == fl.getVisibility()) {
                     fl.setVisibility(View.GONE);
-                    layoutParams.gravity = Gravity.LEFT | Gravity.TOP;
+                    layoutParams.gravity = Gravity.START | Gravity.TOP;
                     layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
                     layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
                 } else {
                     fl.setVisibility(View.VISIBLE);
-                    layoutParams.gravity = Gravity.CENTER;
+                    layoutParams.gravity = Gravity.END | Gravity.BOTTOM;
                     layoutParams.height = controlHeight;
                     layoutParams.width = controlWidth;
                 }
                 _winMgr.updateViewLayout(myView, layoutParams);
             }
         });
-    }
-
-    private void setupLayout() {
-        /*******Setup layout**************************/
-        final int LayoutParamFlags = WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
-                | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-        layoutParams = new WindowManager.LayoutParams(
-                controlWidth,
-                controlHeight,
-                0,200, // coords
-                WindowManager.LayoutParams.TYPE_PRIORITY_PHONE,
-                LayoutParamFlags,
-                PixelFormat.TRANSLUCENT);
-        Log.d(TAG, "layoutParams");
-
-        layoutInflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-        Log.d(TAG, "layoutInflater");
-
-        _winMgr = (WindowManager) getSystemService(WINDOW_SERVICE);
-
-        myView = layoutInflater.inflate(R.layout.keys, null);
-        Log.d(TAG, "layoutInflater");
-        /*******Setup window**************************/
-        _winMgr.addView(myView, layoutParams);
-        Log.d(TAG, "_winMgr.addView");
     }
 
     private void setInfo(String info) {
@@ -255,7 +256,9 @@ public class UIControlService extends Service {
             Log.e(TAG, "Problem with closing socket" + e.getMessage());
         }
         Log.i(TAG, "Connection closed");
-        Toast.makeText(getApplicationContext(),"Connection closed",Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(),
+                getString(R.string.connection_closed),
+                Toast.LENGTH_LONG).show();
     }
 
     private void writeCmd(byte[] cmd) {
