@@ -1,6 +1,4 @@
-#include <SoftwareSerial.h>
 #include <Servo.h>
-#include <MeetAndroid.h>
 #define RX 3  //(analog)   
 #define TX 5  //(analog)
 #define BTN 8   //порт считывания сигнала кнопки(digit)
@@ -19,10 +17,8 @@
 поворота(если новый байт ответственен за поворот в одной плоскости с имеющимся; допуск на поворот сохраняется, но меняется поле запомненного байта), 
 либо начинаем поворот второго сервопривода, либо никаких действий не предпринимаем(если байт не является допустимым)*/
 
-SoftwareSerial myser(RX,TX);
 Servo servo1;  
 Servo servo2;
-MeetAndroid meetAndroid;
 //Вектор поворота сервопривода
 struct Vect
 {
@@ -33,6 +29,8 @@ struct Vect
 
 }P1,P2;  //вектора для серовприводов 1(влево-вправо) и 2(вверх-вниз)
 
+const int buf_length=8;
+char buffer[buf_length];
 char incomingbyte;  
 int onboardLed = 13;      
 int delta;
@@ -44,7 +42,6 @@ char inputStr[5]; // ПРИНИМАЕМОЕ СООБЩЕНИЕ
 
 void setup() {
   Serial.begin(9600);
-  meetAndroid.registerFunction(comingString, 'A');
   P1.mas[0]='w';
   P1.mas[1]='s';
   P2.mas[0]='d';
@@ -52,7 +49,6 @@ void setup() {
   P1.bt=P1.ex=0;
   P2.bt=P2.ex=0;
   delta=2;
-  myser.begin(9600);
   pinMode(onboardLed, OUTPUT);
   pinMode(7,OUTPUT);
   digitalWrite(onboardLed, HIGH);
@@ -70,12 +66,13 @@ void loop() {
 назначенных за управление байтов. В зависимости от этого будем либо
 изменять направление поворота(или останавливать), либо же никакие 
 действия производить не будем*/
-  meetAndroid.receive();
-  if (i==1)  //допускается проверка данных на соотвествие допустимым байтам
+if (Serial.available() > 0)
   {  
-     if (prov(&P1,inputStr[0]));  //проверяем, входит ли в диапазон разрешенных байт первого сервопривода
+    Serial.readBytes(buffer, buf_length); // считываем бай
+     if (prov(&P1,buffer[0]));  //проверяем, входит ли в диапазон разрешенных байт первого сервопривода
        else  
-         prov(&P2,inputStr[0]);  //-||- второго сервопривода
+         prov(&P2,buffer[0]);  //-||- второго сервопривода
+     flushLed(100);
   }
 //Если поворот серовприводов разрешен, то оцениваем направление поворота 
   if(P1.ex)
@@ -133,13 +130,6 @@ int prov(struct Vect *p, char c)
   return 0;
 }
 
-void comingString(byte flag, byte numOfValues)
-{
-
-  meetAndroid.getString(inputStr);
-  i=1;  //получили данные. 
-  flushLed(150);
-}
 void flushLed(int time)
 {
   digitalWrite(7, HIGH);
