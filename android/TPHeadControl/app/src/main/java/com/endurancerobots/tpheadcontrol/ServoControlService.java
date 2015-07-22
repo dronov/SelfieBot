@@ -4,6 +4,8 @@ import android.app.IntentService;
 //import android.app.Notification;
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
@@ -32,6 +34,9 @@ public class ServoControlService extends IntentService {
     private Handler handler;
     private int NOTIFY_ID=101;
     private Context context;
+    private DataTransferThread mDataTransferThread;
+    private Handler mHandler;
+    private ConnectThread connectThread;
 
     public static void startServoControl(Context context, String headId_, String mac_) {
         Log.v(TAG, "startServoControl");
@@ -68,12 +73,14 @@ public class ServoControlService extends IntentService {
         macAddr = mac;
         serv = new TcpProxyClient();
         String answ="";
-        Amarino.connect(getApplicationContext(),macAddr);
-        while(!answ.contains("CLOSE"))
-            if(serv.connectAsServer(headId)) {
-                publishProgress(getString(R.string.successful_connect));
-                answ = runTcpServer();
+        if(bluetoothConnect()) {
+            while (!answ.contains("CLOSE")) {
+                if (serv.connectAsServer(headId)) {
+                    publishProgress(getString(R.string.successful_connect));
+                    answ = runTcpServer();
+                }
             }
+        }
         try {
             if(serv != null)
                 serv.close();
@@ -85,32 +92,45 @@ public class ServoControlService extends IntentService {
         stopSelf();
     }
 
+    private boolean bluetoothConnect() {
+//        Amarino.connect(getApplicationContext(),macAddr);
+        BluetoothAdapter bluetooth = BluetoothAdapter.getDefaultAdapter();
+        BluetoothDevice device = bluetooth.getRemoteDevice(getMac());
+        connectThread = new ConnectThread(device,bluetooth, mHandler);
+        connectThread.start();
+
+        mDataTransferThread = connectThread.getDataTransferThread();
+        if(mDataTransferThread==null){
+            publishProgress(getString(R.string.holder_is_not_connected));
+            return false;
+        }else{
+            publishProgress(getString(R.string.holder_is_connected));
+            return true;
+        }
+
+    }
+
     private String runTcpServer() {
         Log.v(TAG, "runTcpServer");
         try {
             while (true){
                 int read = serv.getInputStream().read(inMsg);
                 Log.d(TAG, "received msg: " + Arrays.toString(inMsg) +"read: "+read);
-
+                write(inMsg);
                 switch (inMsg[0]) {
                     case 119:
-                        Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', 'w');
                         publishProgress("Command: UP (" + inMsg[0] + ")");
                         break;
                     case 97:
-                        Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', 'a');
                         publishProgress("Command: LEFT (" + inMsg[0] + ")");
                         break;
                     case 115:
-                        Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', 's');
                         publishProgress("Command: DOWN (" + inMsg[0] + ")");
                         break;
                     case 100:
-                        Amarino.sendDataToArduino(getApplicationContext(), getMac(), 'A', 'd');
                         publishProgress("Command: RIGHT (" + inMsg[0] + ")");
                         break;
                     case 113:
-                        Amarino.disconnect(getApplicationContext(), getMac());
                         publishProgress("Command: CLOSE CONNECTION (" + inMsg[0] + ")");
                         return "CLOSE";
                     default:
@@ -133,6 +153,10 @@ public class ServoControlService extends IntentService {
             Toast.makeText(getApplicationContext(),"problem with socket",Toast.LENGTH_SHORT).show();
         }
         return "PROBLEM";
+    }
+
+    private void write(byte[] bytes) {
+        mDataTransferThread.write(bytes);
     }
 
     private void publishProgress(String s) {

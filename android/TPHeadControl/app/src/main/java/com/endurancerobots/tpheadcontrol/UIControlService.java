@@ -98,6 +98,7 @@ public class UIControlService extends Service {
 
         mS = new TcpProxyClient(); // Пытаемся подключиться
         sth = new SocketThread();
+
         sth.execute();
     }
 
@@ -181,7 +182,7 @@ public class UIControlService extends Service {
                 FrameLayout fl = (FrameLayout) myView.findViewById(R.id.controlButtons);
                 if (View.VISIBLE == fl.getVisibility()) {
                     fl.setVisibility(View.GONE);
-                    layoutParams.gravity = Gravity.START | Gravity.TOP;
+                    layoutParams.gravity = Gravity.END | Gravity.TOP;
                     layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
                     layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
                 } else {

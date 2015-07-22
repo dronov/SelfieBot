@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">aNDy Head</string>
+    <string name="app_name">GIL Head</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Настройки</string>
@@ -25,12 +25,12 @@
     <string name="title_paired_devices">Доступные устройства</string>
     <string name="holderMacAddr">mac-адрес подставки</string>
     <string name="chooseDevice">Выберите устройство</string>
-    <string name="app_name_launcher">aNDy Head</string>
+    <string name="app_name_launcher">GIL Head</string>
     <string name="title_activity_about">AboutActivity</string>
     <string name="about_text">
-        Это программа для управления подставкой под мобильный телефон.
-        Для связи с подставкой вам необходимо скачать и установить дополнительное приложение Amarino\n
-        <a href="https://amarino.googlecode.com/files/Amarino_2_v0_55.apk" >Скачать Amarino</a>
+        Это программа для управления подставкой под мобильный телефон.\n
+        <b>Авторы проекта:</b> Георгий Тер-Аваков (hardware) и Илья Петров (software)\n
+        Компания <a href="http://endurancerobots.com">Edurance Robots</a>
     </string>
     <string name="about">Помощь</string>
     <string name="choosed">"Выбрано: "</string>
@@ -38,5 +38,7 @@
     <string name="connection_cutted">Соединение разорвано</string>
     <string name="successful_connect">Успешное подключение</string>
     <string name="connection_closed">Соединение закрыто</string>
+    <string name="holder_is_connected">Подставка подключена</string>
+    <string name="holder_is_not_connected">Подставка не подключена</string>
 
 </resources>

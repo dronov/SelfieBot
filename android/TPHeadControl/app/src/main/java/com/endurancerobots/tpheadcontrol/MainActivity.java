@@ -73,6 +73,8 @@ public class MainActivity extends FragmentActivity {
     }
     public void deviceChoosed(String mac) {
         macAddr=mac;
+        String enableBT = BluetoothAdapter.ACTION_REQUEST_ENABLE;
+        startActivityForResult(new Intent(enableBT), 0);
         ServoControlService.startServoControl(getApplicationContext(), getHeadId(), getMac());
     }
 
