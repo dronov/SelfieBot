@@ -9,8 +9,10 @@ import android.graphics.PixelFormat;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -24,6 +26,7 @@ import java.util.Arrays;
 
 public class UIControlService extends Service {
     private WindowManager.LayoutParams layoutParams;
+    private WindowManager.LayoutParams pausedLayoutParams;
     private WindowManager _winMgr;
     private View myView;
     private Button bUp, bDown, bLeft, bRight;
@@ -36,6 +39,9 @@ public class UIControlService extends Service {
     private int port = 4445;
     private TcpProxyClient mS;
     private byte outMsg[] = new byte[5];
+
+    private float _xDelta;
+    private float _yDelta;
 
     private static final String ACTION_START_CONTROLS = "com.endurancerobots.tpheadcontrol.action.START_CONTROLS";
 
@@ -110,26 +116,27 @@ public class UIControlService extends Service {
         layoutParams = new WindowManager.LayoutParams(
                 controlWidth,
                 controlHeight,
-                0,0, // coords
                 WindowManager.LayoutParams.TYPE_PRIORITY_PHONE,
                 LayoutParamFlags,
                 PixelFormat.TRANSLUCENT);
-        layoutParams.gravity = Gravity.END | Gravity.BOTTOM;
-        Log.d(TAG, "layoutParams");
+        layoutParams.gravity = Gravity.NO_GRAVITY;
+        layoutParams.verticalMargin = (float) 0.5;
+        layoutParams.horizontalMargin = (float) 0.5;
+
+        pausedLayoutParams = new WindowManager.LayoutParams();
+        pausedLayoutParams.copyFrom(layoutParams);
+        pausedLayoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        pausedLayoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
 
         layoutInflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-        Log.d(TAG, "layoutInflater");
+        myView = layoutInflater.inflate(R.layout.keys, null);
 
         _winMgr = (WindowManager) getSystemService(WINDOW_SERVICE);
-
-        myView = layoutInflater.inflate(R.layout.keys, null);
-        Log.d(TAG, "layoutInflater");
-        /*******Setup window**************************/
         _winMgr.addView(myView, layoutParams);
-        Log.d(TAG, "_winMgr.addView");
     }
 
     private void setupClicks() {
+
         /*******Setup clicks**************************/
         bUp = (Button) myView.findViewById(R.id.bUp);
         bDown = (Button) myView.findViewById(R.id.bDown);
@@ -138,6 +145,44 @@ public class UIControlService extends Service {
         bClose = (Button) myView.findViewById(R.id.bClose);
         bPause = (Button) myView.findViewById(R.id.bPause);
         Log.d(TAG, "layoutInflater");
+
+        myView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                final float k = (float) 2.5;
+                final float X = event.getRawX()/layoutParams.width/k;
+                final float Y = event.getRawY()/layoutParams.height/k;
+                switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                    case MotionEvent.ACTION_DOWN:
+                        _xDelta = X - (layoutParams.horizontalMargin);
+                        _yDelta = Y - (layoutParams.verticalMargin);
+                        Log.d(TAG,"ACTION_DOWN X="+X+" Y="+Y+" _xDelta="+_xDelta+" _yDelta="+_yDelta+
+                                " lP("+layoutParams.horizontalMargin+", "+layoutParams.verticalMargin+")");
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        Log.d(TAG,"ACTION_UP X="+X+" Y="+Y+" _xDelta="+_xDelta+" _yDelta="+_yDelta+
+                                " lP("+layoutParams.horizontalMargin+", "+layoutParams.verticalMargin+")");
+                        break;
+                    case MotionEvent.ACTION_POINTER_DOWN:
+                        break;
+                    case MotionEvent.ACTION_POINTER_UP:
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        layoutParams.horizontalMargin = (X - _xDelta);
+                        layoutParams.verticalMargin = (Y - _yDelta);
+                        break;
+                }
+                _winMgr.updateViewLayout(myView, layoutParams);
+                return true;
+            }
+        });
+        myView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                Log.i(TAG, "Longpress detected");
+                return false;
+            }
+        });
 
         bUp.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -182,16 +227,11 @@ public class UIControlService extends Service {
                 FrameLayout fl = (FrameLayout) myView.findViewById(R.id.controlButtons);
                 if (View.VISIBLE == fl.getVisibility()) {
                     fl.setVisibility(View.GONE);
-                    layoutParams.gravity = Gravity.END | Gravity.TOP;
-                    layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
-                    layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
+                    _winMgr.updateViewLayout(myView, pausedLayoutParams);
                 } else {
                     fl.setVisibility(View.VISIBLE);
-                    layoutParams.gravity = Gravity.END | Gravity.BOTTOM;
-                    layoutParams.height = controlHeight;
-                    layoutParams.width = controlWidth;
+                    _winMgr.updateViewLayout(myView, layoutParams);
                 }
-                _winMgr.updateViewLayout(myView, layoutParams);
             }
         });
     }

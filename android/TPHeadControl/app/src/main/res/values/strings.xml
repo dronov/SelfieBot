@@ -28,9 +28,15 @@
     <string name="app_name_launcher">GIL Head</string>
     <string name="title_activity_about">AboutActivity</string>
     <string name="about_text">
-        Это программа для управления подставкой под мобильный телефон.\n
+        Это программа для управления подставкой для телефонов и планшетов.\n
+        Для того чтобы управлять подставкой:\n
+        1. Закрепите мобильное устройство в держателе и включите подставку\n
+        2. Нажмите <i>Подключиться к подставке</i>.\n
+        3. Нажмите <i>Подключиться к роботу</i> на мобильном устройстве,
+        с которого вы будете управлять подставкой.\n
+        \n
         <b>Авторы проекта:</b> Георгий Тер-Аваков (hardware) и Илья Петров (software)\n
-        Компания <a href="http://endurancerobots.com">Edurance Robots</a>
+        <b>Компания:</b> Edurance Robots <a href="http://endurancerobots.com">www.endurancerobots.com</a>
     </string>
     <string name="about">Помощь</string>
     <string name="choosed">"Выбрано: "</string>
@@ -40,5 +46,6 @@
     <string name="connection_closed">Соединение закрыто</string>
     <string name="holder_is_connected">Подставка подключена</string>
     <string name="holder_is_not_connected">Подставка не подключена</string>
+    <string name="EnduranceFont">Tahoma</string>
 
 </resources>

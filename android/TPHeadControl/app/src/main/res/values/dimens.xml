@@ -8,4 +8,5 @@
     <dimen name="controls_width">300dp</dimen>
     <dimen name="smallButton">30dp</dimen>
     <dimen name="bigFont">18pt</dimen>
+    <dimen name="normalFont">12pt</dimen>
 </resources>
