@@ -4,10 +4,14 @@ package com.endurancerobots.tpheadcontrol;
 import android.app.Service;
 import android.content.Intent;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Gravity;
@@ -21,10 +25,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.SocketException;
 import java.util.Arrays;
 
 public class UIControlService extends Service {
+    public static final int MESSAGE_READ = 1;
     private WindowManager.LayoutParams layoutParams;
     private WindowManager.LayoutParams pausedLayoutParams;
     private WindowManager _winMgr;
@@ -50,9 +56,11 @@ public class UIControlService extends Service {
     private String headId = "987654321";
     public boolean connected=false;
     private SocketThread sth;
+    private OutputStream outStream;
+    private TcpDataTransferThread tcpDataTransferThread;
+    public static Handler handler;
 
-    //
-//    public static void startUIControls(Context context, String headId_) {
+    //    public static void startUIControls(Context context, String headId_) {
 //        Log.v(TAG, "startUIControls");
 //        Intent intent = new Intent(context, UIControlService.class);
 //        intent.setAction(ACTION_START_CONTROLS);
@@ -88,6 +96,8 @@ public class UIControlService extends Service {
             } else {
                 Log.d(TAG, "CONNECT");
                 Toast.makeText(getApplicationContext(), "CONNECT", Toast.LENGTH_LONG).show();
+                tcpDataTransferThread = new TcpDataTransferThread(mS,handler);
+                tcpDataTransferThread.start();
                 setupLayout();
                 setupClicks();
             }
@@ -97,14 +107,27 @@ public class UIControlService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-
+        handler = new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                switch (msg.what){
+                    case MESSAGE_READ:
+                        Log.i(TAG,"handler got message: "+msg.arg1+" "
+                                +msg.arg2+" "+Arrays.toString(((byte[]) msg.obj)));
+                        setInfo(new String((byte[]) msg.obj));
+                        break;
+                    default:
+                        Log.w(TAG,"handler got Unknown message "+msg.arg1+" "+msg.arg2+" "+msg.obj);
+                }
+            }
+        };
         Log.d(TAG, "onCreate");
 
         Log.i(TAG, "UI Control got Head Id:" + headId);
 
         mS = new TcpProxyClient(); // Пытаемся подключиться
         sth = new SocketThread();
-
         sth.execute();
     }
 
@@ -144,30 +167,34 @@ public class UIControlService extends Service {
         bRight = (Button) myView.findViewById(R.id.bRight);
         bClose = (Button) myView.findViewById(R.id.bClose);
         bPause = (Button) myView.findViewById(R.id.bPause);
-        Log.d(TAG, "layoutInflater");
+        Log.v(TAG, "layoutInflater");
 
         myView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 final float k = (float) 2.5;
-                final float X = event.getRawX()/layoutParams.width/k;
-                final float Y = event.getRawY()/layoutParams.height/k;
+                final float X = event.getRawX() / layoutParams.width / k;
+                final float Y = event.getRawY() / layoutParams.height / k;
+
                 switch (event.getAction() & MotionEvent.ACTION_MASK) {
                     case MotionEvent.ACTION_DOWN:
                         _xDelta = X - (layoutParams.horizontalMargin);
                         _yDelta = Y - (layoutParams.verticalMargin);
-                        Log.d(TAG,"ACTION_DOWN X="+X+" Y="+Y+" _xDelta="+_xDelta+" _yDelta="+_yDelta+
-                                " lP("+layoutParams.horizontalMargin+", "+layoutParams.verticalMargin+")");
+                        Log.d(TAG, "ACTION_DOWN X=" + X + " Y=" + Y + " _xDelta=" + _xDelta + " _yDelta=" + _yDelta +
+                                " lP(" + layoutParams.horizontalMargin + ", " + layoutParams.verticalMargin + ")");
                         break;
                     case MotionEvent.ACTION_UP:
-                        Log.d(TAG,"ACTION_UP X="+X+" Y="+Y+" _xDelta="+_xDelta+" _yDelta="+_yDelta+
-                                " lP("+layoutParams.horizontalMargin+", "+layoutParams.verticalMargin+")");
+                        Log.d(TAG, "ACTION_UP X=" + X + " Y=" + Y + " _xDelta=" + _xDelta + " _yDelta=" + _yDelta +
+                                " lP(" + layoutParams.horizontalMargin + ", " + layoutParams.verticalMargin + ")");
                         break;
                     case MotionEvent.ACTION_POINTER_DOWN:
+                        Log.v(TAG, "ACTION_POINTER_DOWN");
                         break;
                     case MotionEvent.ACTION_POINTER_UP:
+                        Log.v(TAG, "ACTION_POINTER_UP");
                         break;
                     case MotionEvent.ACTION_MOVE:
+                        Log.v(TAG, "ACTION_MOVE");
                         layoutParams.horizontalMargin = (X - _xDelta);
                         layoutParams.verticalMargin = (Y - _yDelta);
                         break;
@@ -176,46 +203,44 @@ public class UIControlService extends Service {
                 return true;
             }
         });
-        myView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                Log.i(TAG, "Longpress detected");
-                return false;
-            }
-        });
 
         bUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setInfo("Up");
+//                setInfo("Up");
                 turnUp();
             }
         });
-        bDown.setOnClickListener(new View.OnClickListener() {
+        View.OnTouchListener touchListener = new View.OnTouchListener() {
             @Override
-            public void onClick(View view) {
-                setInfo("Down");
-                turnDown();
+            public boolean onTouch(final View v, MotionEvent event) {
+                switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                    case MotionEvent.ACTION_MOVE:
+                        v.setVisibility(View.INVISIBLE);
+                        switch (v.getId()){
+                            case R.id.bUp: turnUp(); break;
+                            case R.id.bDown: turnDown(); break;
+                            case R.id.bLeft: turnLeft(); break;
+                            case R.id.bRight: turnRight(); break;
+                            default:
+                                break;
+                        }
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        v.setVisibility(View.VISIBLE);
+                        break;
+                }
+                return true;
             }
-        });
-        bLeft.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                setInfo("Left");
-                turnLeft();
-            }
-        });
-        bRight.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                setInfo("Right");
-                turnRight();
-            }
-        });
+        };
+        bUp.setOnTouchListener(touchListener);
+        bDown.setOnTouchListener(touchListener);
+        bLeft.setOnTouchListener(touchListener);
+        bRight.setOnTouchListener(touchListener);
         bClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setInfo("Closing...");
+//                setInfo("Closing...");
                 quit();
                 stopSelf();
             }
@@ -269,7 +294,14 @@ public class UIControlService extends Service {
         writeCmd(outMsg);
     }
 
-
+    public void echo(){
+        outMsg[0] = 13;
+        outMsg[1] = 13;
+        outMsg[2] = 13;
+        outMsg[3] = 13;
+        outMsg[4] = 13;
+        writeCmd(outMsg);
+    }
     public void turnDown()  {
         outMsg[0] = 's';
         outMsg[1] = 's';
@@ -302,9 +334,13 @@ public class UIControlService extends Service {
                 Toast.LENGTH_LONG).show();
     }
 
+    byte[] response = new byte[5];
     private void writeCmd(byte[] cmd) {
         try{
-            mS.getOutputStream().write(cmd);
+            tcpDataTransferThread.write(cmd);
+
+//            String s = new String(response);
+//            setInfo(s);
         } catch (SocketException e){
             Log.e(TAG, "Can't write cmd. Problem with socket: " + e.getMessage());
             stopSelf();

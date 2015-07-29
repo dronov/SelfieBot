@@ -47,5 +47,14 @@
     <string name="holder_is_connected">Подставка подключена</string>
     <string name="holder_is_not_connected">Подставка не подключена</string>
     <string name="EnduranceFont">Tahoma</string>
+    <string name="bluetooth_enabled">Bluetooth активировано</string>
+    <string name="bluetooth_not_enabled">Bluetooth не было активировано</string>
+    <string name="bluetooth_not_supported">Устройство не поддерживает Bluetooth</string>
+
+    <string name="title_activity_device_choosing">DeviceChoosing</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="back">Назад</string>
+    <string name="bluetooth_source_is_unreachable">Устройство не может получить команду по bluetooth</string>
 
 </resources>

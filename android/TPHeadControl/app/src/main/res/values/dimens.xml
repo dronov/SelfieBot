@@ -6,7 +6,9 @@
     <dimen name="button_width">100dp</dimen>
     <dimen name="controls_height">300dp</dimen>
     <dimen name="controls_width">300dp</dimen>
-    <dimen name="smallButton">30dp</dimen>
+    <dimen name="smallButton">45dp</dimen>
     <dimen name="bigFont">18pt</dimen>
     <dimen name="normalFont">12pt</dimen>
+    <dimen name="square_mid_buttons">150dp</dimen>
+    <dimen name="cmd_debug_width">200dp</dimen>
 </resources>

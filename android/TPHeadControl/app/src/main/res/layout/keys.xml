@@ -10,8 +10,8 @@
 
         <Button
             style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/smallButton"
+            android:layout_height="@dimen/smallButton"
             android:text="_"
             android:id="@+id/bPause"
             android:layout_gravity="left|top" />
@@ -53,14 +53,14 @@
 
         <Button
             style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/smallButton"
+            android:layout_height="@dimen/smallButton"
             android:text="X"
             android:id="@+id/bClose"
             android:layout_gravity="right|top" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="@dimen/cmd_debug_width"
             android:layout_height="wrap_content"
             android:text="control"
             android:id="@+id/cmdDebug"

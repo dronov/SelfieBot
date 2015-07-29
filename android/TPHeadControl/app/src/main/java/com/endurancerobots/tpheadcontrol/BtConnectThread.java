@@ -13,15 +13,17 @@ import java.lang.reflect.Method;
 /**
  * Created by ilya on 17.07.15.
  */
-public class ConnectThread extends Thread {
-    private static final String TAG = "ConnectThread";
+public class BtConnectThread extends Thread {
+    private static final String TAG = "BtConnectThread";
     private final BluetoothSocket mmSocket;
     private final BluetoothDevice mmDevice;
     private Handler mHandler;
     private BluetoothAdapter mBluetoothAdapter;
-    private DataTransferThread mDataTransferThread;
+    private BtDataTransferThread mBtDataTransferThread;
 
-    public ConnectThread(BluetoothDevice device, BluetoothAdapter adapter, Handler handler) {
+    public BtConnectThread(BluetoothDevice device,
+                           BluetoothAdapter adapter,
+                           Handler handler) throws NullPointerException{
         // Use a temporary object that is later assigned to mmSocket,
         // because mmSocket is final
 
@@ -32,43 +34,50 @@ public class ConnectThread extends Thread {
         try {
             Method m = device.getClass().getMethod("createRfcommSocket",new Class[] {int.class});
             tmp = (BluetoothSocket) m.invoke(device,1);
+        } catch (SecurityException e) {
+            Log.e("BLUETOOTH", e.getMessage());
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
-        } catch (InvocationTargetException e) {
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
             e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
         }
+
         mmSocket = tmp;
-        Log.i(TAG, "mmSocket = tmp;");
+        if(mmSocket==null) {
+            NullPointerException e = new NullPointerException("Device was not connected");
+            Log.e(TAG, "mmSocket is nul");
+            throw e;
+        }
+
     }
 
     public void run() {
-        mBluetoothAdapter.cancelDiscovery();
-        Log.i(TAG, "cancelDiscovery");
         try {
             mmSocket.connect();
-        } catch (IOException connectException) {
-            Log.e(TAG,connectException.getMessage()+"\ntrying to close the socket");
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage() + "\ntrying to close the socket");
             // Unable to connect; close the socket and get out
             try {
                 mmSocket.close();
             } catch (IOException closeException) {
                 Log.e(TAG,closeException.getMessage());
-            } catch (NullPointerException e){
-                Log.e(TAG,"BT Socket is null: "+e.getMessage());
+            } catch (NullPointerException ne){
+                Log.e(TAG,"BT Socket is null: "+ne.getMessage());
             }
             return;
         }
-
-        Log.i(TAG,"manageConnectedSocket");
+        mBluetoothAdapter.cancelDiscovery();
+        Log.i(TAG, "cancelDiscovery");
     }
 
-    public DataTransferThread getDataTransferThread() {
-        mDataTransferThread = new DataTransferThread(mmSocket, mHandler);
-        mDataTransferThread.start();
-        cancel();
-        return mDataTransferThread;
+    public BtDataTransferThread getDataTransferThread() throws NullPointerException {
+        mBtDataTransferThread = new BtDataTransferThread(mmSocket, mHandler);
+        mBtDataTransferThread.start();
+        return mBtDataTransferThread;
     }
 
     /** Will cancel an in-progress connection, and close the socket */

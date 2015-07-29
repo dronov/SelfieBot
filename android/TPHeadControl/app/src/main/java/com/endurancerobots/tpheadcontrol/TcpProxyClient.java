@@ -48,23 +48,23 @@ public class TcpProxyClient extends Socket {
                     /// Send id-string
                     out.write(strId);
                     out.flush();
-                    Log.i(TAG, "Send id-string '" + strId + "'");
+                    Log.v(TAG, "Send id-string '" + strId + "'");
                     /// Receive answer
                     this.getInputStream().read(inputBuf);
-                    Log.d(TAG, "Receive answer: " + Arrays.toString(inputBuf));
+                    Log.v(TAG, "Receive answer: " + Arrays.toString(inputBuf));
                     ///Analize string
                     s = new String(inputBuf, "UTF-8");
-                    Log.d(TAG, "Convert answer: " + s);
+                    Log.v(TAG, "Convert answer: " + s);
                     if (s.contains(CONNECT)) {
                         Log.i(TAG, CONNECT);
                         return true;
                     } else if (s.contains(WAIT)) {
-                        Log.d(TAG, WAIT);
+                        Log.v(TAG, WAIT);
                     } else if (s.contains(ERROR)) {
                         Log.e(TAG, ERROR);
                         return false;
                     } else {
-                        Log.d(TAG, "Got only: " + Arrays.toString(inputBuf));
+                        Log.i(TAG, "Got only: " + Arrays.toString(inputBuf));
                         return false;
                     }
                 } catch (IOException e) {

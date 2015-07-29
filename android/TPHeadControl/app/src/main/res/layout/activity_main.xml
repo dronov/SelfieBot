@@ -38,19 +38,41 @@
                 android:textSize="@dimen/bigFont"
                 android:layout_alignParentTop="true"
                 android:layout_centerHorizontal="true" />
+            <!--<LinearLayout-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:orientation="horizontal"-->
+                <!--android:layout_below="@+id/headId"-->
+                <!--android:layout_centerHorizontal="true">-->
+                <!--<ImageButton-->
+                    <!--android:layout_width="@dimen/square_mid_buttons"-->
+                    <!--android:layout_height="@dimen/square_mid_buttons"-->
+                    <!--android:text="@string/connect2Robot"-->
+                    <!--android:onClick="connect2RobotOnClick"-->
+                    <!--android:id="@+id/connect2Robot"-->
+                    <!--android:background="@drawable/phone_and_arrow" />-->
+                <!--<ImageButton-->
+                    <!--android:layout_width="@dimen/square_mid_buttons"-->
+                    <!--android:layout_height="@dimen/square_mid_buttons"-->
+                    <!--android:text="@string/makeServer"-->
+                    <!--android:onClick="makeServerOnClick"-->
+                    <!--android:id="@+id/makeServer"-->
+                    <!--android:background="@drawable/phone_and_arduino" />-->
+            <!--</LinearLayout>-->
         </RelativeLayout>
-
-        <Button
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/makeServer"
-            android:onClick="makeServerOnClick"
-            android:id="@+id/makeServer"/>
         <Button
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="@string/connect2Robot"
             android:onClick="connect2RobotOnClick"
-            android:id="@+id/connect2Robot"/>
+            android:id="@+id/connect2Robot"
+            />
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/makeServer"
+            android:onClick="makeServerOnClick"
+            android:id="@+id/makeServer"
+            />
     </LinearLayout>
 </RelativeLayout>

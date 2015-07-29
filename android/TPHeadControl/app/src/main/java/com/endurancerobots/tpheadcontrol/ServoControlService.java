@@ -9,21 +9,22 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
-import android.os.Looper;
+import android.os.Message;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InterruptedIOException;
+import java.io.OutputStream;
 import java.net.SocketException;
 import java.util.Arrays;
-import at.abraxas.amarino.Amarino;
 
 public class ServoControlService extends IntentService {
     private static final String START_SERVO_CONTROL = "com.endurancerobots.tpheadcontrol.action.START_SERVO_CONTROL";
-
+    public static final int BLUETOOTH_MESSAGE_READ = 1;
     private static final String EXTRA_HEAD_ID = "com.endurancerobots.tpheadcontrol.extra.HEAD_ID";
     private static final String EXTRA_MAC = "com.endurancerobots.tpheadcontrol.extra.MAC";
     private static final String TAG = "ServoControlService";
@@ -31,12 +32,13 @@ public class ServoControlService extends IntentService {
     private String macAddr;
     private TcpProxyClient serv;
     private byte[] inMsg=new byte[5];
-    private Handler handler;
     private int NOTIFY_ID=101;
     private Context context;
-    private DataTransferThread mDataTransferThread;
-    private Handler mHandler;
-    private ConnectThread connectThread;
+    private BtDataTransferThread mBtDataTransferThread;
+    private static Handler mHandler;
+    private BtConnectThread btConnectThread;
+    private OutputStream mOutStream;
+    private boolean mBtTransferIsEnabled=true;
 
     public static void startServoControl(Context context, String headId_, String mac_) {
         Log.v(TAG, "startServoControl");
@@ -49,6 +51,21 @@ public class ServoControlService extends IntentService {
 
     public ServoControlService() {
         super("UIControlService");
+        mHandler = new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                switch (msg.what){
+                    case BLUETOOTH_MESSAGE_READ:
+                        Log.d(TAG,"got bluetoth message "+Arrays.toString((byte[])msg.obj)
+                                +"with length: "+msg.arg1);
+                        break;
+                    default:
+                        Log.w(TAG,"Unknown message "+Arrays.toString((byte[])msg.obj)
+                                +"with length: "+msg.arg1);
+                }
+            }
+        };
     }
 
     @Override
@@ -73,71 +90,102 @@ public class ServoControlService extends IntentService {
         macAddr = mac;
         serv = new TcpProxyClient();
         String answ="";
-        if(bluetoothConnect()) {
+        boolean connected=true;
+        if(mBtTransferIsEnabled)
+            connected = bluetoothConnect();
+        if(connected) {
+            publishProgress(getString(R.string.holder_is_connected));
+            Log.i(TAG, "Bluetooth device connected");
             while (!answ.contains("CLOSE")) {
                 if (serv.connectAsServer(headId)) {
+                    try {
+                        mOutStream = serv.getOutputStream();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     publishProgress(getString(R.string.successful_connect));
                     answ = runTcpServer();
                 }
             }
-        }
-        try {
-            if(serv != null)
+            try {
                 serv.close();
-        } catch (IOException e) {
-            Log.e(TAG, "error while closing server: "+e.getMessage());
+                Log.i(TAG, "Server closed");
+            } catch (IOException e) {
+                Log.e(TAG, "error while closing server: " + e.getMessage());
+            }catch (NullPointerException e){
+                Log.e(TAG, "Null pointer: " + e.getMessage());
+            }
+            publishProgress(getString(R.string.server_closed));
+        }else {
+            publishProgress(getString(R.string.holder_is_not_connected));
         }
-        Log.i(TAG, "Server closed");
-        publishProgress(getString(R.string.server_closed));
+
         stopSelf();
     }
 
     private boolean bluetoothConnect() {
-//        Amarino.connect(getApplicationContext(),macAddr);
         BluetoothAdapter bluetooth = BluetoothAdapter.getDefaultAdapter();
         BluetoothDevice device = bluetooth.getRemoteDevice(getMac());
-        connectThread = new ConnectThread(device,bluetooth, mHandler);
-        connectThread.start();
 
-        mDataTransferThread = connectThread.getDataTransferThread();
-        if(mDataTransferThread==null){
-            publishProgress(getString(R.string.holder_is_not_connected));
-            return false;
-        }else{
-            publishProgress(getString(R.string.holder_is_connected));
+        try {
+            btConnectThread = new BtConnectThread(device, bluetooth, mHandler);
+            btConnectThread.start();
+
+            mBtDataTransferThread = btConnectThread.getDataTransferThread();
+            btConnectThread.cancel();
+
+            mBtDataTransferThread.write(new String("ping").getBytes());
             return true;
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        } catch (IOException e) {
+            mBtDataTransferThread.cancel();
         }
-
+        return false;
     }
 
     private String runTcpServer() {
         Log.v(TAG, "runTcpServer");
         try {
+            InputStream inStream = serv.getInputStream();
             while (true){
-                int read = serv.getInputStream().read(inMsg);
-                Log.d(TAG, "received msg: " + Arrays.toString(inMsg) +"read: "+read);
-                write(inMsg);
-                switch (inMsg[0]) {
-                    case 119:
-                        publishProgress("Command: UP (" + inMsg[0] + ")");
-                        break;
-                    case 97:
-                        publishProgress("Command: LEFT (" + inMsg[0] + ")");
-                        break;
-                    case 115:
-                        publishProgress("Command: DOWN (" + inMsg[0] + ")");
-                        break;
-                    case 100:
-                        publishProgress("Command: RIGHT (" + inMsg[0] + ")");
-                        break;
-                    case 113:
-                        publishProgress("Command: CLOSE CONNECTION (" + inMsg[0] + ")");
-                        return "CLOSE";
-                    default:
-                        publishProgress("Unknown command: ("+inMsg[0]+")");
+                int read = inStream.read(inMsg);
+                Log.d(TAG, "received msg: " + Arrays.toString(inMsg) + "read: " + read);
+                try{
+                    writeToBluetooth(inMsg);
+                    switch (inMsg[0]) {
+                        case 119:
+                            publishProgress("Command: UP (" + inMsg[0] + ")");
+                            writeToOperator(new byte[]{inMsg[0]});
+                            break;
+                        case 97:
+                            publishProgress("Command: LEFT (" + inMsg[0] + ")");
+                            writeToOperator(new byte[]{inMsg[0]});
+                            break;
+                        case 115:
+                            publishProgress("Command: DOWN (" + inMsg[0] + ")");
+                            writeToOperator(new byte[]{inMsg[0]});
+                            break;
+                        case 100:
+                            publishProgress("Command: RIGHT (" + inMsg[0] + ")");
+                            writeToOperator(new byte[]{inMsg[0]});
+                            break;
+                        case 113:
+                            publishProgress("Command: CLOSE CONNECTION (" + inMsg[0] + ")");
+                            writeToOperator(new byte[]{inMsg[0]});
+                            return "CLOSE";
+                        default:
+                            publishProgress("Unknown command: (" + inMsg[0] + ")");
+                            writeToOperator(new String("Unknown command: ("+ inMsg[0]+")").getBytes());
+                    }
+                }catch (IOException e) {
+                    Log.e(TAG, e.getMessage());
+                    publishProgress(getString(R.string.bluetooth_source_is_unreachable));
+                    writeToOperator(getString(R.string.bluetooth_source_is_unreachable).getBytes());
                 }
-
-                //TODO: Передавать байтовые массивы "не вскрывая"
+                catch (NullPointerException e){
+                    Log.w(TAG,e.getMessage());
+                }
             }
         } catch (InterruptedIOException e) {
             //if timeout occurs
@@ -154,9 +202,22 @@ public class ServoControlService extends IntentService {
         }
         return "PROBLEM";
     }
+    private void writeToOperator(byte[] bytes){
+        try {
+            if(mOutStream!=null) {
+                mOutStream.write(bytes);
+                Log.d(TAG, "writeToOperator: " + Arrays.toString(bytes));
+            }else {
+                Log.i(TAG, "writeToOperator failed: stream is null");
+            }
+        } catch (IOException e) {
+            Log.v(TAG, "error when write echo message");
+        }
+    }
 
-    private void write(byte[] bytes) {
-        mDataTransferThread.write(bytes);
+    private void writeToBluetooth(byte[] bytes)throws IOException{
+            if(mBtTransferIsEnabled)
+                mBtDataTransferThread.write(bytes);
     }
 
     private void publishProgress(String s) {
@@ -187,7 +248,6 @@ public class ServoControlService extends IntentService {
 
     @Override
     public void onDestroy() {
-        Amarino.disconnect(getApplicationContext(),getMac());
         super.onDestroy();
     }
 

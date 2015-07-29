@@ -7,22 +7,22 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Socket;
 import java.util.Arrays;
 
 /**
- * Created by ilya on 17.07.15.
+ * Created by ilya on 23.07.15.
  */
-public class DataTransferThread extends Thread {
+public class TcpDataTransferThread extends Thread {
+    private static final String TAG = "BtDataTransferThread";
 
-    private static final String TAG = "DataTransferThread";
-
-    private final BluetoothSocket mmSocket;
     private final InputStream mmInStream;
     private final OutputStream mmOutStream;
+    private final TcpProxyClient mmSocket;
+    private boolean succesfullSent; //Успешная доставка
     private Handler mHandler;
-//    private android.os.Handler mHandler;
 
-    public DataTransferThread(BluetoothSocket socket, Handler handler) {
+    public TcpDataTransferThread(TcpProxyClient socket, Handler handler) throws NullPointerException {
         mmSocket = socket;
         InputStream tmpIn = null;
         OutputStream tmpOut = null;
@@ -33,30 +33,26 @@ public class DataTransferThread extends Thread {
         try {
             tmpIn = socket.getInputStream();
             tmpOut = socket.getOutputStream();
-        } catch (IOException e) { }
-
+        } catch (Exception e) {
+            Log.e(TAG, "Exeption: " + e.getMessage());
+        }
         mmInStream = tmpIn;
         mmOutStream = tmpOut;
     }
 
     public void run() {
-        byte[] buffer = new byte[1];  // buffer store for the stream
+        byte[] buffer = new byte[128];  // buffer store for the stream
         int bytes; // bytes returned from read()
 //        Packet packet = new Packet();
-
 
         // Keep listening to the InputStream until an exception occurs
         while (true) {
             try {
                 bytes = mmInStream.read(buffer);
-                Log.i(TAG, "read " + 1 + " bytes:" + Arrays.toString(buffer));
-//                packet.appendByte(buffer[0]);
-//                if(packet.isReady()){
-//                    Log.i(TAG, "read Packet with " + packet.getPackLength() + " bytes:" + Arrays.toString(packet.getBytes()));
-//                }
+                Log.d(TAG, "read " + bytes + " bytes:" + Arrays.toString(buffer));
                 // Send the obtained bytes to the UI activity
-//                mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
-//                        .sendToTarget();
+                mHandler.obtainMessage(UIControlService.MESSAGE_READ, bytes, -1, buffer)
+                        .sendToTarget();
 
             } catch (IOException e) {
                 Log.e(TAG,e.getMessage());
@@ -66,21 +62,15 @@ public class DataTransferThread extends Thread {
     }
 
     /* Call this from the main activity to send data to the remote device */
-    public void write(byte[] bytes) {
-        try {
-            mmOutStream.write(bytes);
-            Log.i(TAG, "write "+bytes.length+" bytes:"+Arrays.toString(bytes));
-        } catch (IOException e) {
-            Log.e(TAG,e.getMessage());
-        }
+    public void write(byte[] bytes) throws IOException {
+        mmOutStream.write(bytes);
+        Log.d(TAG, "write "+bytes.length+" bytes:"+Arrays.toString(bytes));
     }
 
     /* Call this from the main activity to shutdown the connection */
     public void cancel() {
         try {
             mmSocket.close();
-        } catch (IOException e) { Log.e(TAG,e.getMessage());}
+        } catch (Exception e) {Log.e(TAG, e.getMessage());}
     }
 }
-
-
