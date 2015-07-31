@@ -7,31 +7,29 @@ import android.support.v4.app.FragmentActivity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.PopupMenu;
 import android.widget.Toast;
 
-import at.abraxas.amarino.Amarino;
-
 public class MainActivity extends FragmentActivity {
-
     public static final int CHOOSE_BLUETOOTH_DEVICE = 0;
+
+    private static final String ACTION_START_CONTROLS = "com.endurancerobots.tpheadcontrol.action.START_CONTROLS";
+    private static final String EXTRA_HEAD_ID = "com.endurancerobots.tpheadcontrol.extra.HEAD_ID";
     private static final String TAG = "MainActivity";
-    private String headId;
+    private static final int REQUEST_ENABLE_BT = 1;
+
     private ArrayAdapter<String> mNewDevicesArrayAdapter;
     private BluetoothAdapter mBtAdapter;
     private BroadcastReceiver mReceiver;
-    private String macAddr="";
-    private BluetoothAdapter mBluetoothAdapter;
-    private static final int REQUEST_ENABLE_BT = 1;
+    private String mMacAddr ="";
+    private Intent UIControlServiceIntent;
+    private boolean mBluetoothEnabled=true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,14 +56,22 @@ public class MainActivity extends FragmentActivity {
 //            return true;
 //        }else
         if (id == R.id.exit) {
+            stopService(UIControlServiceIntent);
             finish();
             return true;
-        }else if(id == R.id.about){
-            startActivity(new Intent(getApplicationContext(),AboutActivity.class));
+        }else if(id == R.id.about) {
+            startActivity(new Intent(getApplicationContext(), AboutActivity.class));
             return true;
         }
-
         return super.onOptionsItemSelected(item);
+    }
+
+    private void disableBluetooth() {
+        mBluetoothEnabled=false;
+    }
+
+    private void enableBluetooth() {
+        mBluetoothEnabled=true;
     }
 
     public void makeServerOnClick(View view) {
@@ -73,21 +79,18 @@ public class MainActivity extends FragmentActivity {
     }
 
 
-    private static final String ACTION_START_CONTROLS = "com.endurancerobots.tpheadcontrol.action.START_CONTROLS";
-
-    private static final String EXTRA_HEAD_ID = "com.endurancerobots.tpheadcontrol.extra.HEAD_ID";
     public void connect2RobotOnClick(View view) {
         Log.d(TAG, "connect2RobotOnClick pressed");
 //        UIControlService.startUIControls(getApplicationContext(), getHeadId());
         Log.v(TAG, "startUIControls");
-        Intent intent = new Intent(getApplicationContext(), UIControlService.class);
-        intent.setAction(ACTION_START_CONTROLS);
+        UIControlServiceIntent = new Intent(getApplicationContext(), UIControlService.class);
+        UIControlServiceIntent.setAction(ACTION_START_CONTROLS);
 //        intent.putExtra(EXTRA_HEAD_ID, getHeadId());
-        getApplicationContext().startService(intent);
+        getApplicationContext().startService(UIControlServiceIntent);
     }
 
     private String getMac(){
-        return macAddr;
+        return mMacAddr;
     }
 
     public String getHeadId() {
@@ -95,7 +98,7 @@ public class MainActivity extends FragmentActivity {
         return  editText.getText().toString();
     }
     private void setBluetoothOn() {
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter != null) {
             Log.d(TAG,"Device support bluetooth");
             if (!mBluetoothAdapter.isEnabled()) {
@@ -149,7 +152,13 @@ public class MainActivity extends FragmentActivity {
         /** see deviceChoosed */
     }
     public void deviceChoosed(String mac) {
-        macAddr=mac;
+        mMacAddr =mac;
         ServoControlService.startServoControl(getApplicationContext(), getHeadId(), getMac());
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.i(TAG,"onDestroy");
+        super.onDestroy();
     }
 }

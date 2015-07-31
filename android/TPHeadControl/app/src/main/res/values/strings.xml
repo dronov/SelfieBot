@@ -1,60 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">GIL Head</string>
-
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Настройки</string>
-    <string name="exit">Выход</string>
-    <string name="makeServer">Подключиться к подставке</string>
-    <string name="connect2Robot">Подключиться к роботу</string>
-
-    <string name="hello">Hello World, TcpClient!</string>
-    <string name="Up" >Верх</string>
-    <string name="ipHint" >Head IP address</string>
-    <string name="connect" >Соединение p2p (порт 1553)</string>
-    <string name="сonnectproxy" >Соединение через прокси (порт 4445)</string>
-    <string name="left">Лево</string>
-    <string name="down">Низ</string>
-    <string name="right">Право</string>
-    <string name="connectionp2p">Успешное подключение точка-точка</string>
-    <string name="connectionp2pnot">Невозможно подключиться к серверу</string>
-    <string name="connectionproxynot">Невозможно подключиться\nк прокси-серверу</string>
-    <string name="connectionproxy">Успешное подключение\nчерез прокси-сервер</string>
+    <string name="app_name" translatable="false">GIL Head</string>
+    <string name="app_name_launcher" translatable="false">GIL Head</string>
+    <string name="hello_world" translatable="false">Hello world!</string>
+    <string name="down">Down</string>
+    <string name="enable_bluetooth_connection">Use Bluetooth</string>
+    <string name="exit">Exit</string>
+    <string name="holderMacAddr">holder mac address </string>
+    <string name="holder_is_connected">Holder is connected</string>
+    <string name="holder_is_not_connected">Holder is not connected</string>
+    <string name="ipHint">Head IP address</string>
+    <string name="left">Left</string>
+    <string name="makeServer">Connect to Holder</string>
     <string name="pausing">Pausing...</string>
-    <string name="button_scan">Поиск устройств</string>
-    <string name="title_other_devices">Другие устройства</string>
-    <string name="title_paired_devices">Доступные устройства</string>
-    <string name="holderMacAddr">mac-адрес подставки</string>
-    <string name="chooseDevice">Выберите устройство</string>
-    <string name="app_name_launcher">GIL Head</string>
-    <string name="title_activity_about">AboutActivity</string>
-    <string name="about_text">
-        Это программа для управления подставкой для телефонов и планшетов.\n
-        Для того чтобы управлять подставкой:\n
-        1. Закрепите мобильное устройство в держателе и включите подставку\n
-        2. Нажмите <i>Подключиться к подставке</i>.\n
-        3. Нажмите <i>Подключиться к роботу</i> на мобильном устройстве,
-        с которого вы будете управлять подставкой.\n
-        \n
-        <b>Авторы проекта:</b> Георгий Тер-Аваков (hardware) и Илья Петров (software)\n
-        <b>Компания:</b> Edurance Robots <a href="http://endurancerobots.com">www.endurancerobots.com</a>
+    <string name="right">Right</string>
+    <string name="server_closed">Server closed</string>
+    <string name="successful_connect">Successful connection</string>
+    <string name="title_activity_about">Help</string>
+    <string name="title_activity_device_choosing">Choose mac-address</string>
+    <string name="title_other_devices">Other devices</string>
+    <string name="title_paired_devices">Paired devices</string>
+    <string name="сonnectproxy">Connection via proxy (port 4445)</string>
+    <string name="Up">Up</string>
+    <string name="about">Help</string>
+    <string name="action_settings">Settings</string>
+    <string name="about_text">It\'s app for controling movable holder.\n To control:\n
+        1. Hold your device in credle and switch on the Holder \n
+        2. Push <i>Connect to Holder</i>.\n
+        3. Now your partner can start GIL head and push <i>Connect to robot</i> to control the Holder\n
+        <b>Authors:</b> Vladislav Sannikov (design), George Ter-Avakov (hardware) and Ilya Petrov (app)\n
+        <b>Company:</b> Endurance Robots <a href="http://endurancerobots.com">www.endurancerobots.com</a>
     </string>
-    <string name="about">Помощь</string>
-    <string name="choosed">"Выбрано: "</string>
-    <string name="server_closed">Сервер закрыт</string>
-    <string name="connection_cutted">Соединение разорвано</string>
-    <string name="successful_connect">Успешное подключение</string>
-    <string name="connection_closed">Соединение закрыто</string>
-    <string name="holder_is_connected">Подставка подключена</string>
-    <string name="holder_is_not_connected">Подставка не подключена</string>
-    <string name="EnduranceFont">Tahoma</string>
-    <string name="bluetooth_enabled">Bluetooth активировано</string>
-    <string name="bluetooth_not_enabled">Bluetooth не было активировано</string>
-    <string name="bluetooth_not_supported">Устройство не поддерживает Bluetooth</string>
-
-    <string name="title_activity_device_choosing">DeviceChoosing</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
-    <string name="back">Назад</string>
-    <string name="bluetooth_source_is_unreachable">Устройство не может получить команду по bluetooth</string>
-
+    <string name="back">Back</string>
+    <string name="bluetooth_enabled">Bluetooth enabled</string>
+    <string name="bluetooth_not_enabled">Bluetooth was not enabled</string>
+    <string name="bluetooth_not_supported">Bluetooth is not supported</string>
+    <string name="bluetooth_source_is_unreachable">Bluetooth source is unreachable</string>
+    <string name="button_scan">Scanning for devices</string>
+    <string name="chooseDevice">Choose device</string>
+    <string name="choosed">mac: </string>
+    <string name="connect">p2p connection (port 1553)</string>
+    <string name="connect2Robot">Connect to robot</string>
+    <string name="connection_closed">Connection closed</string>
+    <string name="connection_cutted">Connection lost</string>
+    <string name="connectionp2p">Successful p2p connection </string>
+    <string name="connectionp2pnot">Could\'t connect to server</string>
+    <string name="connectionproxy">Successful connection to proxy server</string>
+    <string name="connectionproxynot">Could\'t connect to proxy server</string>
 </resources>

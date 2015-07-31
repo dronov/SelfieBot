@@ -7,6 +7,6 @@
     </style>
 
     <style name="KeyControlsTheme" parent="android:Theme.Translucent">
-        <item name="android:alpha">50</item>
+        <item name="android:textColor">@android:color/black</item>
     </style>
 </resources>

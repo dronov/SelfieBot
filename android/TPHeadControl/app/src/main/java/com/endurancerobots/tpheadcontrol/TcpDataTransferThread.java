@@ -14,13 +14,17 @@ import java.util.Arrays;
  * Created by ilya on 23.07.15.
  */
 public class TcpDataTransferThread extends Thread {
-    private static final String TAG = "BtDataTransferThread";
+
+    private static final String TAG = "TcpDataTransferThread";
+    public static final int MESSAGE_READ = 10;
+    public static final int CONNECTION_INFO = 20;
 
     private final InputStream mmInStream;
     private final OutputStream mmOutStream;
     private final TcpProxyClient mmSocket;
-    private boolean succesfullSent; //Успешная доставка
     private Handler mHandler;
+    private boolean mSendInLoop=false;
+    private byte[] mBytes;
 
     public TcpDataTransferThread(TcpProxyClient socket, Handler handler) throws NullPointerException {
         mmSocket = socket;
@@ -43,19 +47,20 @@ public class TcpDataTransferThread extends Thread {
     public void run() {
         byte[] buffer = new byte[128];  // buffer store for the stream
         int bytes; // bytes returned from read()
-//        Packet packet = new Packet();
 
         // Keep listening to the InputStream until an exception occurs
         while (true) {
             try {
                 bytes = mmInStream.read(buffer);
-                Log.d(TAG, "read " + bytes + " bytes:" + Arrays.toString(buffer));
+                Log.v(TAG, "read " + bytes + " bytes:" + Arrays.toString(buffer));
                 // Send the obtained bytes to the UI activity
-                mHandler.obtainMessage(UIControlService.MESSAGE_READ, bytes, -1, buffer)
+                mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
                         .sendToTarget();
 
             } catch (IOException e) {
                 Log.e(TAG,e.getMessage());
+                mHandler.obtainMessage(CONNECTION_INFO, -1, -1, "Connection lost")
+                        .sendToTarget();
                 break;
             }
         }
@@ -65,6 +70,14 @@ public class TcpDataTransferThread extends Thread {
     public void write(byte[] bytes) throws IOException {
         mmOutStream.write(bytes);
         Log.d(TAG, "write "+bytes.length+" bytes:"+Arrays.toString(bytes));
+    }
+
+    public void sendBytesInLoop(byte[] bytes){
+        mBytes=new byte[bytes.length];
+        mSendInLoop =true;
+    }
+    public void disableSendingInLoop(){
+        mSendInLoop =false;
     }
 
     /* Call this from the main activity to shutdown the connection */

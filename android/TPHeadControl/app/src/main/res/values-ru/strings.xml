@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="action_settings">Настройки</string>
+    <string name="exit">Выход</string>
+    <string name="makeServer">Подключиться к подставке</string>
+    <string name="connect2Robot">Подключиться к роботу</string>
+
+    <string name="Up" >Верх</string>
+    <string name="connect">Соединение p2p (порт 1553)</string>
+    <string name="сonnectproxy" >Соединение через прокси (порт 4445)</string>
+    <string name="left">Лево</string>
+    <string name="down">Низ</string>
+    <string name="right">Право</string>
+    <string name="connectionp2p">Успешное подключение точка-точка</string>
+    <string name="connectionp2pnot">Невозможно подключиться к серверу</string>
+    <string name="connectionproxynot">Невозможно подключиться\nк прокси-серверу</string>
+    <string name="connectionproxy">Успешное подключение\nчерез прокси-сервер</string>
+    <string name="pausing">Пауза...</string>
+    <string name="button_scan">Поиск устройств</string>
+    <string name="title_other_devices">Другие устройства</string>
+    <string name="title_paired_devices">Доступные устройства</string>
+    <string name="holderMacAddr">mac-адрес подставки</string>
+    <string name="chooseDevice">Выберите устройство</string>
+
+    <string name="title_activity_about">Помощь</string>
+    <string name="about_text">
+        Это программа для управления подставкой для телефонов и планшетов.\n
+        Для того чтобы управлять подставкой:\n
+        1. Закрепите мобильное устройство в держателе и включите подставку\n
+        2. Нажмите <i>Подключиться к подставке</i>.\n
+        3. Нажмите <i>Подключиться к роботу</i> на мобильном устройстве,
+        с которого вы будете управлять подставкой.\n
+        \n
+        <b>Авторы проекта:</b> Владислав Санников (конструкция), Георгий Тер-Аваков (электроника) и Илья Петров (приложение)\n
+        <b>Компания:</b> Edurance Robots <a href="http://endurancerobots.com">www.endurancerobots.com</a>
+    </string>
+    <string name="about">Помощь</string>
+    <string name="choosed">"Выбрано: "</string>
+    <string name="server_closed">Сервер закрыт</string>
+    <string name="connection_cutted">Соединение разорвано</string>
+    <string name="successful_connect">Успешное подключение</string>
+    <string name="connection_closed">Соединение закрыто</string>
+    <string name="holder_is_connected">Подставка подключена</string>
+    <string name="holder_is_not_connected">Подставка не подключена</string>
+    <string name="bluetooth_enabled">Bluetooth активировано</string>
+    <string name="bluetooth_not_enabled">Bluetooth не было активировано</string>
+    <string name="bluetooth_not_supported">Устройство не поддерживает Bluetooth</string>
+
+    <string name="title_activity_device_choosing">Выбор mac-адреса</string>
+    <string name="back">Назад</string>
+    <string name="bluetooth_source_is_unreachable">Устройство не может получить команду по bluetooth</string>
+    <string name="enable_bluetooth_connection">Использовать Bluetooth</string>
+    <string name="ipHint">IP-адрес подставки</string>
+
+</resources>

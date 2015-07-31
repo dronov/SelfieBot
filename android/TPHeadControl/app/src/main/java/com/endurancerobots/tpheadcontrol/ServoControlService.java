@@ -23,24 +23,26 @@ import java.net.SocketException;
 import java.util.Arrays;
 
 public class ServoControlService extends IntentService {
-    private static final String START_SERVO_CONTROL = "com.endurancerobots.tpheadcontrol.action.START_SERVO_CONTROL";
-    public static final int BLUETOOTH_MESSAGE_READ = 1;
-    private static final String EXTRA_HEAD_ID = "com.endurancerobots.tpheadcontrol.extra.HEAD_ID";
-    private static final String EXTRA_MAC = "com.endurancerobots.tpheadcontrol.extra.MAC";
-    private static final String TAG = "ServoControlService";
-    private String headId = "123456789";
-    private String macAddr;
-    private TcpProxyClient serv;
-    private byte[] inMsg=new byte[5];
-    private int NOTIFY_ID=101;
-    private Context context;
-    private BtDataTransferThread mBtDataTransferThread;
-    private static Handler mHandler;
-    private BtConnectThread btConnectThread;
-    private OutputStream mOutStream;
-    private boolean mBtTransferIsEnabled=true;
+    /// TODO: наследоваться от класса Service (v5)
+
+    static final String START_SERVO_CONTROL = "com.endurancerobots.tpheadcontrol.action.START_SERVO_CONTROL";
+    static final String EXTRA_HEAD_ID = "com.endurancerobots.tpheadcontrol.extra.HEAD_ID";
+    static final String EXTRA_MAC = "com.endurancerobots.tpheadcontrol.extra.MAC";
+    static final String TAG = "ServoControlService";
+
+    TcpDataTransferThread tcpDataTransferThread = null;
+    String mMacAddr;
+    TcpProxyClient mServ;
+    byte[] mInMsg =new byte[5];
+    BtDataTransferThread mBtDataTransferThread;
+    OutputStream mOutStream;
+    boolean mBtTransferIsEnabled=true;
+    byte mMsgCounter =1;
+    static Handler sHandler;
+    String mHeadId;
 
     public static void startServoControl(Context context, String headId_, String mac_) {
+        /// TODO: наследоваться от класса Service: скопировать это в MainActivity (v5)
         Log.v(TAG, "startServoControl");
         Intent intent = new Intent(context, ServoControlService.class);
         intent.setAction(START_SERVO_CONTROL);
@@ -51,14 +53,30 @@ public class ServoControlService extends IntentService {
 
     public ServoControlService() {
         super("UIControlService");
-        mHandler = new Handler(){
+        sHandler = new Handler(){
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
                 switch (msg.what){
-                    case BLUETOOTH_MESSAGE_READ:
-                        Log.d(TAG,"got bluetoth message "+Arrays.toString((byte[])msg.obj)
+                    case BtDataTransferThread.MESSAGE_READ:
+                        Log.d(TAG,"Got bluetooth message "+Arrays.toString((byte[])msg.obj)
                                 +"with length: "+msg.arg1);
+                        break;
+                    case BtDataTransferThread.CONNECTION_INFO:
+                        Log.i(TAG,"Got INFO message from device"+(String)msg.obj);
+                        break;
+                    case TcpDataTransferThread.MESSAGE_READ:
+                        Log.d(TAG,"Got TCP message "+Arrays.toString((byte[])msg.obj)
+                                +"with length: "+msg.arg1);
+                        try {
+                            writeToBluetooth((byte[])msg.obj);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            publishProgress(getString(R.string.bluetooth_source_is_unreachable));
+                        }
+                        break;
+                    case TcpDataTransferThread.CONNECTION_INFO:
+                        Log.d(TAG, "TCP connection info: " + (String)msg.obj);
                         break;
                     default:
                         Log.w(TAG,"Unknown message "+Arrays.toString((byte[])msg.obj)
@@ -86,20 +104,20 @@ public class ServoControlService extends IntentService {
         Log.i(TAG, "headId_=" + headId_);
 
         Log.i(TAG,headId_+" "+mac);
-        headId=headId_;
-        macAddr = mac;
-        serv = new TcpProxyClient();
+        mHeadId = headId_;
+        mMacAddr = mac;
+        mServ = new TcpProxyClient();
         String answ="";
         boolean connected=true;
-        if(mBtTransferIsEnabled)
+//        if(mBtTransferIsEnabled)
             connected = bluetoothConnect();
         if(connected) {
             publishProgress(getString(R.string.holder_is_connected));
             Log.i(TAG, "Bluetooth device connected");
             while (!answ.contains("CLOSE")) {
-                if (serv.connectAsServer(headId)) {
+                if (mServ.connectAsServer(mHeadId)) {
                     try {
-                        mOutStream = serv.getOutputStream();
+                        mOutStream = mServ.getOutputStream();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -108,7 +126,8 @@ public class ServoControlService extends IntentService {
                 }
             }
             try {
-                serv.close();
+
+                mServ.close();
                 Log.i(TAG, "Server closed");
             } catch (IOException e) {
                 Log.e(TAG, "error while closing server: " + e.getMessage());
@@ -119,8 +138,34 @@ public class ServoControlService extends IntentService {
         }else {
             publishProgress(getString(R.string.holder_is_not_connected));
         }
-
         stopSelf();
+    }
+    private void startThread(){
+        // TODO: запускать сервер в отдельном потоке наследованномот TcpDataTransferThread (in v5)
+        mServ = new TcpProxyClient();
+        String answ="";
+        boolean connected = bluetoothConnect();
+        if(connected) {
+            publishProgress(getString(R.string.holder_is_connected));
+            if (mServ.connectAsServer(mHeadId)) {
+                tcpDataTransferThread = new TcpDataTransferThread(mServ,sHandler);
+                tcpDataTransferThread.start();
+            }else{
+                try {
+                    mServ.close();
+                    Log.i(TAG, "Server closed");
+                } catch (IOException e) {
+                    Log.e(TAG, "error while closing server: " + e.getMessage());
+                }catch (NullPointerException e){
+                    Log.e(TAG, "Null pointer: " + e.getMessage());
+                }
+                publishProgress(getString(R.string.server_closed));
+            }
+        }else {
+            publishProgress(getString(R.string.holder_is_not_connected));
+        }
+        stopSelf();
+
     }
 
     private boolean bluetoothConnect() {
@@ -128,55 +173,56 @@ public class ServoControlService extends IntentService {
         BluetoothDevice device = bluetooth.getRemoteDevice(getMac());
 
         try {
-            btConnectThread = new BtConnectThread(device, bluetooth, mHandler);
-            btConnectThread.start();
+            BtConnectThread mBtConnectThread = new BtConnectThread(device, bluetooth, sHandler);
+            mBtConnectThread.start();
 
-            mBtDataTransferThread = btConnectThread.getDataTransferThread();
-            btConnectThread.cancel();
+            mBtDataTransferThread = mBtConnectThread.getDataTransferThread();
+            mBtConnectThread.cancel();
 
-            mBtDataTransferThread.write(new String("ping").getBytes());
+//            writeToBluetooth(new String("ping").getBytes());
             return true;
         }catch (NullPointerException e){
             e.printStackTrace();
-        } catch (IOException e) {
-            mBtDataTransferThread.cancel();
         }
+//        catch (IOException e) {
+//            mBtDataTransferThread.cancel();
+//        }
         return false;
     }
 
     private String runTcpServer() {
         Log.v(TAG, "runTcpServer");
         try {
-            InputStream inStream = serv.getInputStream();
+            InputStream inStream = mServ.getInputStream();
             while (true){
-                int read = inStream.read(inMsg);
-                Log.d(TAG, "received msg: " + Arrays.toString(inMsg) + "read: " + read);
+                int read = inStream.read(mInMsg);
+                Log.d(TAG, "received msg: " + Arrays.toString(mInMsg) + "read: " + read);
                 try{
-                    writeToBluetooth(inMsg);
-                    switch (inMsg[0]) {
+                    writeToBluetooth(mInMsg);
+                    switch (mInMsg[0]) {
                         case 119:
-                            publishProgress("Command: UP (" + inMsg[0] + ")");
-                            writeToOperator(new byte[]{inMsg[0]});
+                            publishProgress("Command: UP (" + mInMsg[0] + ")");
+                            writeToOperator(new byte[]{mInMsg[0]});
                             break;
                         case 97:
-                            publishProgress("Command: LEFT (" + inMsg[0] + ")");
-                            writeToOperator(new byte[]{inMsg[0]});
+                            publishProgress("Command: LEFT (" + mInMsg[0] + ")");
+                            writeToOperator(new byte[]{mInMsg[0]});
                             break;
                         case 115:
-                            publishProgress("Command: DOWN (" + inMsg[0] + ")");
-                            writeToOperator(new byte[]{inMsg[0]});
+                            publishProgress("Command: DOWN (" + mInMsg[0] + ")");
+                            writeToOperator(new byte[]{mInMsg[0]});
                             break;
                         case 100:
-                            publishProgress("Command: RIGHT (" + inMsg[0] + ")");
-                            writeToOperator(new byte[]{inMsg[0]});
+                            publishProgress("Command: RIGHT (" + mInMsg[0] + ")");
+                            writeToOperator(new byte[]{mInMsg[0]});
                             break;
                         case 113:
-                            publishProgress("Command: CLOSE CONNECTION (" + inMsg[0] + ")");
-                            writeToOperator(new byte[]{inMsg[0]});
+                            publishProgress("Command: CLOSE CONNECTION (" + mInMsg[0] + ")");
+                            writeToOperator(new byte[]{mInMsg[0]});
                             return "CLOSE";
                         default:
-                            publishProgress("Unknown command: (" + inMsg[0] + ")");
-                            writeToOperator(new String("Unknown command: ("+ inMsg[0]+")").getBytes());
+                            publishProgress("Unknown command: (" + mInMsg[0] + ")");
+                            writeToOperator(new String("Unknown command: ("+ mInMsg[0]+")").getBytes());
                     }
                 }catch (IOException e) {
                     Log.e(TAG, e.getMessage());
@@ -200,8 +246,9 @@ public class ServoControlService extends IntentService {
             Log.e(TAG, "IOException: " + e.getMessage() + "!!!");
             Toast.makeText(getApplicationContext(),"problem with socket",Toast.LENGTH_SHORT).show();
         }
-        return "PROBLEM";
+        return "CLOSE";
     }
+
     private void writeToOperator(byte[] bytes){
         try {
             if(mOutStream!=null) {
@@ -216,8 +263,10 @@ public class ServoControlService extends IntentService {
     }
 
     private void writeToBluetooth(byte[] bytes)throws IOException{
-            if(mBtTransferIsEnabled)
+//            if(mBtTransferIsEnabled) {
                 mBtDataTransferThread.write(bytes);
+                mMsgCounter++;
+//            }
     }
 
     private void publishProgress(String s) {
@@ -237,17 +286,19 @@ public class ServoControlService extends IntentService {
                 .setContentText(s); // Текст уведомления
 
         Notification notification = builder.build();
+        final int NOTIFY_ID = 101;
         notificationManager.notify(NOTIFY_ID, notification);
     }
 
 
 
     public String getMac() {
-        return macAddr;
+        return mMacAddr;
     }
 
     @Override
     public void onDestroy() {
+//        tcpDataTransferThread.cancel();
         super.onDestroy();
     }
 

@@ -12,9 +12,10 @@
             style="?android:attr/buttonStyleSmall"
             android:layout_width="@dimen/smallButton"
             android:layout_height="@dimen/smallButton"
-            android:text="_"
+            android:text="-"
             android:id="@+id/bPause"
-            android:layout_gravity="left|top" />
+            android:layout_gravity="left|top"
+            android:background="@drawable/dot_white" />
     </FrameLayout>
 
     <FrameLayout
@@ -26,30 +27,30 @@
         <Button
             android:layout_width="@dimen/button_width"
             android:layout_height="@dimen/button_height"
-            android:text="@string/down"
             android:id="@+id/bDown"
-            android:layout_gravity="center_horizontal|bottom" />
+            android:layout_gravity="center_horizontal|bottom"
+            android:background="@drawable/arrow_white_down" />
 
         <Button
             android:layout_width="@dimen/button_width"
             android:layout_height="@dimen/button_height"
-            android:text="@string/left"
             android:id="@+id/bLeft"
-            android:layout_gravity="left|bottom" />
+            android:layout_gravity="left|bottom"
+            android:background="@drawable/arrow_white_left" />
 
         <Button
             android:layout_width="@dimen/button_width"
             android:layout_height="@dimen/button_height"
-            android:text="@string/right"
             android:id="@+id/bRight"
-            android:layout_gravity="right|bottom" />
+            android:layout_gravity="right|bottom"
+            android:background="@drawable/arrow_white_right" />
 
         <Button
             android:layout_width="@dimen/button_width"
             android:layout_height="@dimen/button_height"
-            android:text="@string/Up"
             android:id="@+id/bUp"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:background="@drawable/arrow_white_up" />
 
         <Button
             style="?android:attr/buttonStyleSmall"
@@ -57,7 +58,8 @@
             android:layout_height="@dimen/smallButton"
             android:text="X"
             android:id="@+id/bClose"
-            android:layout_gravity="right|top" />
+            android:layout_gravity="right|top"
+            android:background="@drawable/dot_white" />
 
         <TextView
             android:layout_width="@dimen/cmd_debug_width"

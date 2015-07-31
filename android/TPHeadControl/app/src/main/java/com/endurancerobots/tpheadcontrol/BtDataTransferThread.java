@@ -7,8 +7,6 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.Timestamp;
-import java.sql.Time;
 import java.util.Arrays;
 
 /**
@@ -17,12 +15,18 @@ import java.util.Arrays;
 public class BtDataTransferThread extends Thread {
 
     private static final String TAG = "BtDataTransferThread";
-
+    public static final int MESSAGE_READ = 1;
+    public static final int CONNECTION_INFO = 2;
     private final BluetoothSocket mmSocket;
-    private final InputStream mmInStream;
+    private InputStream mmInStream;
     private final OutputStream mmOutStream;
     private Handler mHandler;
+    boolean mSendInLoop =false;
+    private byte[] mBytes=null;
+
+
 //    private android.os.Handler mHandler;
+
 
     public BtDataTransferThread(BluetoothSocket socket, Handler handler) throws NullPointerException {
         mmSocket = socket;
@@ -43,27 +47,35 @@ public class BtDataTransferThread extends Thread {
     }
 
     public void run() {
+        final int packLen=5;
+        int packCurrentLen=0;
+        byte[] pack=new byte[packLen];
         byte[] buffer = new byte[1];  // buffer store for the stream
         int bytes; // bytes returned from read()
-//        Packet packet = new Packet();
-
         // Keep listening to the InputStream until an exception occurs
-        while (true) {
-            try {
-                bytes = mmInStream.read(buffer);
-                Log.v(TAG, "read " + 1 + " bytes:" + Arrays.toString(buffer));
-//                packet.appendByte(buffer[0]);
-//                if(packet.isReady()){
-//                    Log.i(TAG, "read Packet with " + packet.getPackLength() + " bytes:" + Arrays.toString(packet.getBytes()));
-//                }
-                // Send the obtained bytes to the UI activity
-                mHandler.obtainMessage(ServoControlService.BLUETOOTH_MESSAGE_READ, bytes, -1, buffer)
-                        .sendToTarget();
 
-            } catch (IOException e) {
-                Log.e(TAG,"Failed with reading:"+e.getMessage());
-                break;
-            }
+            while (true) {
+                try {
+                    bytes = mmInStream.read(buffer);
+                        System.arraycopy(buffer, 0, pack, packCurrentLen, bytes); // TODO: Исправить до 01.09.2015. bytes не могут быть больше 1
+                        packCurrentLen += bytes;
+                    if (packCurrentLen == packLen) {
+                        String s = new String(pack);
+                        Log.v(TAG, "read " + " packet: '" + s + "' (" + Arrays.toString(pack) + ")");
+                        // Send the obtained bytes to the UI activity
+                        mHandler.obtainMessage(MESSAGE_READ, pack.length, -1,
+                                pack)
+                                .sendToTarget();
+                        packCurrentLen = 0;
+                    } else {
+                        Log.v(TAG, "read " + bytes + " bytes: '" + Arrays.toString(buffer) + "'");
+                    }
+                } catch (IOException e) {
+                    Log.e(TAG, "Failed with reading: " + e.getMessage());
+                    break;
+                }catch (ArrayIndexOutOfBoundsException e){
+                    Log.e(TAG, e.getMessage());
+                }
         }
     }
 

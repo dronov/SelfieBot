@@ -16,10 +16,8 @@ import java.lang.reflect.Method;
 public class BtConnectThread extends Thread {
     private static final String TAG = "BtConnectThread";
     private final BluetoothSocket mmSocket;
-    private final BluetoothDevice mmDevice;
     private Handler mHandler;
     private BluetoothAdapter mBluetoothAdapter;
-    private BtDataTransferThread mBtDataTransferThread;
 
     public BtConnectThread(BluetoothDevice device,
                            BluetoothAdapter adapter,
@@ -28,7 +26,6 @@ public class BtConnectThread extends Thread {
         // because mmSocket is final
 
         BluetoothSocket tmp = null;
-        mmDevice = device;
         mBluetoothAdapter = adapter;
         mHandler = handler;
         try {
@@ -75,7 +72,7 @@ public class BtConnectThread extends Thread {
     }
 
     public BtDataTransferThread getDataTransferThread() throws NullPointerException {
-        mBtDataTransferThread = new BtDataTransferThread(mmSocket, mHandler);
+        BtDataTransferThread mBtDataTransferThread = new BtDataTransferThread(mmSocket, mHandler);
         mBtDataTransferThread.start();
         return mBtDataTransferThread;
     }

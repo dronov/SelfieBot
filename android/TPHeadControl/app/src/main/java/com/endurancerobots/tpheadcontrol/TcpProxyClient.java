@@ -1,14 +1,10 @@
 package com.endurancerobots.tpheadcontrol;
 
-import android.os.AsyncTask;
 import android.util.Log;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Arrays;
@@ -17,14 +13,16 @@ import java.util.Arrays;
  * Created by ilya on 09.07.15.
  */
 public class TcpProxyClient extends Socket {
-    private static final String TAG = "TcpProxyClient";
-    String ERROR = "\r\nERROR\r\n";
-    String WAIT = "\r\nWAIT\r\n";
-    String CONNECT = "\r\nCONNECT\r\n";
-    String strId = "987654321";
-    private byte inputBuf[] = new byte[50];
-    public static final int TCP_PROXY_SERVER_PORT = 4445;
     public static final String PROXY_IP = "46.38.49.133";
+    public static final int TCP_PROXY_SERVER_PORT = 4445;
+
+    private static final String TAG = "TcpProxyClient";
+    private static final String ERROR = "\r\nERROR\r\n";
+    private static final String WAIT = "\r\nWAIT\r\n";
+    private static final String CONNECT = "\r\nCONNECT\r\n";
+
+    private byte mInputBuf[] = new byte[50];
+
     public boolean connectAsClient(String headId){
         Log.v(TAG,"connectAsClient");
         return connectToProxyServer(PROXY_IP,TCP_PROXY_SERVER_PORT,"G"+headId+"\r");
@@ -40,20 +38,20 @@ public class TcpProxyClient extends Socket {
      * @return true if connection is successful
      */
     private boolean connectToProxyServer(String proxyIp, int proxyServerPort, String headId) {
-        strId=headId;
+        String mStrId = headId;
         if (runTcpClient(proxyIp, proxyServerPort)) {
                 try {
                     String s="";
                     BufferedWriter out = new BufferedWriter(new OutputStreamWriter(this.getOutputStream()));
                     /// Send id-string
-                    out.write(strId);
+                    out.write(mStrId);
                     out.flush();
-                    Log.v(TAG, "Send id-string '" + strId + "'");
+                    Log.v(TAG, "Send id-string '" + mStrId + "'");
                     /// Receive answer
-                    this.getInputStream().read(inputBuf);
-                    Log.v(TAG, "Receive answer: " + Arrays.toString(inputBuf));
+                    this.getInputStream().read(mInputBuf);
+                    Log.v(TAG, "Receive answer: " + Arrays.toString(mInputBuf));
                     ///Analize string
-                    s = new String(inputBuf, "UTF-8");
+                    s = new String(mInputBuf, "UTF-8");
                     Log.v(TAG, "Convert answer: " + s);
                     if (s.contains(CONNECT)) {
                         Log.i(TAG, CONNECT);
@@ -64,7 +62,7 @@ public class TcpProxyClient extends Socket {
                         Log.e(TAG, ERROR);
                         return false;
                     } else {
-                        Log.i(TAG, "Got only: " + Arrays.toString(inputBuf));
+                        Log.i(TAG, "Got only: " + Arrays.toString(mInputBuf));
                         return false;
                     }
                 } catch (IOException e) {
@@ -85,7 +83,7 @@ public class TcpProxyClient extends Socket {
         }
         else {
             try {
-//                TODO сделать подключение в отдельном потоке
+//                TODO сделать подключение в отдельном потоке (v6)
                 connect(new InetSocketAddress(host, port));
             } catch (IOException e) {
                 e.printStackTrace();
