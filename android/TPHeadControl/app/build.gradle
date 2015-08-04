@@ -9,8 +9,8 @@ android {
         applicationId "com.endurancerobots.tpheadcontrol"
         minSdkVersion 4
         targetSdkVersion 22
-        versionCode 4
-        versionName "0.4.3 GIL"
+        versionCode 5
+        versionName "0.4.4 GIL"
     }
     buildTypes {
         release {

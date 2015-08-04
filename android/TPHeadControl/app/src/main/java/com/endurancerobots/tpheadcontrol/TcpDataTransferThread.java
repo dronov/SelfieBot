@@ -18,6 +18,7 @@ public class TcpDataTransferThread extends Thread {
     private static final String TAG = "TcpDataTransferThread";
     public static final int MESSAGE_READ = 10;
     public static final int CONNECTION_INFO = 20;
+    public static final int CLOSE_CONNECTION = 113;
 
     private final InputStream mmInStream;
     private final OutputStream mmOutStream;
@@ -45,6 +46,7 @@ public class TcpDataTransferThread extends Thread {
     }
 
     public void run() {
+        Log.d(TAG,"thread started");
         byte[] buffer = new byte[128];  // buffer store for the stream
         int bytes; // bytes returned from read()
 
@@ -56,12 +58,15 @@ public class TcpDataTransferThread extends Thread {
                 // Send the obtained bytes to the UI activity
                 mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
                         .sendToTarget();
+                if(buffer[0]==CLOSE_CONNECTION){
+                    mHandler.obtainMessage(CLOSE_CONNECTION, -1, -1, buffer)
+                            .sendToTarget();
+                }
 
             } catch (IOException e) {
                 Log.e(TAG,e.getMessage());
                 mHandler.obtainMessage(CONNECTION_INFO, -1, -1, "Connection lost")
                         .sendToTarget();
-                break;
             }
         }
     }
@@ -72,18 +77,11 @@ public class TcpDataTransferThread extends Thread {
         Log.d(TAG, "write "+bytes.length+" bytes:"+Arrays.toString(bytes));
     }
 
-    public void sendBytesInLoop(byte[] bytes){
-        mBytes=new byte[bytes.length];
-        mSendInLoop =true;
-    }
-    public void disableSendingInLoop(){
-        mSendInLoop =false;
-    }
-
     /* Call this from the main activity to shutdown the connection */
     public void cancel() {
         try {
             mmSocket.close();
+            Log.d(TAG, "thread canceled");
         } catch (Exception e) {Log.e(TAG, e.getMessage());}
     }
 }

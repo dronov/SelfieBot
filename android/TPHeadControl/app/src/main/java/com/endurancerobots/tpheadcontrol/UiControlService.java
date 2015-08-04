@@ -24,7 +24,11 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.util.Arrays;
 
-public class UIControlService extends Service {
+public class UiControlService extends Service {
+
+    public static final String EXTRA_HEAD_ID = "com.endurancerobots.tpheadcontrol.extra.HEAD_ID";
+    public static final String ACTION_START_CONTROLS = "com.endurancerobots.tpheadcontrol.extra.START_CONTROLS";
+
 
     private static Handler sHandler;
 
@@ -41,23 +45,24 @@ public class UIControlService extends Service {
 
     private TcpDataTransferThread tcpDataTransferThread;
 
-    private static final String TAG = "UIControlService";
+    private static final String TAG = "UiControlService";
 
     @SuppressWarnings("deprecation")
     @Override
     public void onStart(Intent intent, int startId) {
         super.onStart(intent, startId);
-//        mHeadId = intent.getStringExtra(EXTRA_HEAD_ID);
-    }
-    public UIControlService() {
-
+        if(intent!=null) {
+            String action = intent.getAction();
+            if((ACTION_START_CONTROLS).equals(action))
+            mHeadId = intent.getStringExtra(EXTRA_HEAD_ID);
+        }
     }
 
     class SocketThread extends AsyncTask<Void,Void,Boolean> {
         @Override
         protected Boolean doInBackground(Void... params) {
             Log.d(TAG, "doInBackground");
-            return mS.connectAsClient(mHeadId);
+            return mS.connectAsClient();
         }
 
         @Override
@@ -67,11 +72,13 @@ public class UIControlService extends Service {
             Log.d(TAG, "connected="+connected);
             if (!connected) {
                 Log.e(TAG, "Client was not connected!");
-                Toast.makeText(getApplicationContext(), "Client was not connected!", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(),
+                        getString(R.string.unsuccessful_connection), Toast.LENGTH_LONG).show();
                 stopSelf();
             } else {
                 Log.d(TAG, "CONNECT");
-                Toast.makeText(getApplicationContext(), "CONNECT", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(),
+                        getString(R.string.successful_connection), Toast.LENGTH_LONG).show();
                 tcpDataTransferThread = new TcpDataTransferThread(mS, sHandler);
                 tcpDataTransferThread.start();
                 setupLayout();
@@ -83,6 +90,7 @@ public class UIControlService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.d(TAG, "Service Created");
         sHandler = new Handler(){
             @Override
             public void handleMessage(Message msg) {
@@ -91,7 +99,7 @@ public class UIControlService extends Service {
                     case TcpDataTransferThread.MESSAGE_READ:
                         Log.i(TAG, "sHandler got message: " + msg.arg1 + " "
                                 + msg.arg2 + " " + Arrays.toString(((byte[]) msg.obj)));
-                        setInfo(cmdDeshifrator((byte[]) msg.obj));
+                        setInfo(ComandDecoder.decode((byte[]) msg.obj));
                         break;
                     default:
                         Log.w(TAG,"sHandler got Unknown message "+msg.arg1+" "+msg.arg2+" "+msg.obj);
@@ -102,27 +110,11 @@ public class UIControlService extends Service {
 
         Log.i(TAG, "UI Control got Head Id:" + mHeadId);
 
-        mS = new TcpProxyClient(); // Пытаемся подключиться
+        mS = new TcpProxyClient(mHeadId); // Пытаемся подключиться
         SocketThread socketThread = new SocketThread();
         socketThread.execute();
     }
 
-    private String cmdDeshifrator(byte[] cmd) {
-        switch (cmd[0]){
-            case 119:
-                return ("Command: UP (" + cmd[0] + ")");
-            case 97:
-                return("Command: LEFT (" + cmd[0] + ")");
-            case 115:
-                return("Command: DOWN (" + cmd[0] + ")");
-            case 100:
-                return("Command: RIGHT (" + cmd[0] + ")");
-            case 113:
-                return("Command: CLOSE CONNECTION (" + cmd[0] + ")");
-            default:
-                return("Unknown command: (" + cmd[0] + ")");
-        }
-    }
     private void setupLayout() {
         /*******Setup layout**************************/
         final int LayoutParamFlags = WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
@@ -327,6 +319,12 @@ public class UIControlService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.d(TAG, "Service destroyed");
+        super.onDestroy();
     }
 }
 

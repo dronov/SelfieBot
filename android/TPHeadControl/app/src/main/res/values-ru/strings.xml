@@ -2,7 +2,7 @@
 <resources>
 
     <string name="action_settings">Настройки</string>
-    <string name="exit">Выход</string>
+    <string name="exit">Остановить сервисы и выйти</string>
     <string name="makeServer">Подключиться к подставке</string>
     <string name="connect2Robot">Подключиться к роботу</string>
 
@@ -52,5 +52,10 @@
     <string name="bluetooth_source_is_unreachable">Устройство не может получить команду по bluetooth</string>
     <string name="enable_bluetooth_connection">Использовать Bluetooth</string>
     <string name="ipHint">IP-адрес подставки</string>
+    <string name="bt_thread_closed">Поток Bluetooth закрыт</string>
+    <string name="successful_connection">Успешное соединение</string>
+    <string name="unsuccessful_connection">Неудачное соединение</string>
+    <string name="bluetooth_source_is_unreachable_not_connected">Устройство не подключено</string>
+    <string name="cant_write_to_operator">Невозможно написать оператору</string>
 
 </resources>

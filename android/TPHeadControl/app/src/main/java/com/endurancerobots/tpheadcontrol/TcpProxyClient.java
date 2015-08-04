@@ -8,6 +8,7 @@ import java.io.OutputStreamWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Created by ilya on 09.07.15.
@@ -20,16 +21,23 @@ public class TcpProxyClient extends Socket {
     private static final String ERROR = "\r\nERROR\r\n";
     private static final String WAIT = "\r\nWAIT\r\n";
     private static final String CONNECT = "\r\nCONNECT\r\n";
+    private static final String NOT_RESPONSED = "NOT_RESP";
+    private static final String NOT_CONNECTED = "NOT_CONNECTED";
+    private String mHeadId="";
 
     private byte mInputBuf[] = new byte[50];
 
-    public boolean connectAsClient(String headId){
+    public boolean connectAsClient(){
         Log.v(TAG,"connectAsClient");
-        return connectToProxyServer(PROXY_IP,TCP_PROXY_SERVER_PORT,"G"+headId+"\r");
+        return CONNECT.equals(connectToProxyServer(PROXY_IP,TCP_PROXY_SERVER_PORT,"G"+mHeadId+"\r"));
     }
-    public boolean connectAsServer(String headId){
-        Log.v(TAG,"connectAsServer");
-        return connectToProxyServer(PROXY_IP,TCP_PROXY_SERVER_PORT,"S"+headId+"\r");
+    public boolean connectAsServer() {
+        while (!CONNECT.equals(connectToProxyServer(PROXY_IP, TCP_PROXY_SERVER_PORT, "S" + mHeadId + "\r")));
+        return true;
+    }
+
+    public TcpProxyClient(String headId){
+        mHeadId=headId;
     }
     /**
      * Connection with proxy client
@@ -37,7 +45,7 @@ public class TcpProxyClient extends Socket {
      * @param proxyServerPort - destination port
      * @return true if connection is successful
      */
-    private boolean connectToProxyServer(String proxyIp, int proxyServerPort, String headId) {
+    private String connectToProxyServer(String proxyIp, int proxyServerPort, String headId) {
         String mStrId = headId;
         if (runTcpClient(proxyIp, proxyServerPort)) {
                 try {
@@ -55,21 +63,22 @@ public class TcpProxyClient extends Socket {
                     Log.v(TAG, "Convert answer: " + s);
                     if (s.contains(CONNECT)) {
                         Log.i(TAG, CONNECT);
-                        return true;
+                        return CONNECT;
                     } else if (s.contains(WAIT)) {
                         Log.v(TAG, WAIT);
+                        return WAIT;
                     } else if (s.contains(ERROR)) {
                         Log.e(TAG, ERROR);
-                        return false;
+                        return ERROR;
                     } else {
                         Log.i(TAG, "Got only: " + Arrays.toString(mInputBuf));
-                        return false;
+                        return NOT_RESPONSED;
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
         }
-        return false;
+        return NOT_CONNECTED;
     }
     /**
      * @param host - server ip-address

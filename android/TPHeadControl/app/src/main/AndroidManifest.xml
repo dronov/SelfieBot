@@ -33,7 +33,7 @@
         </activity>
 
         <service
-            android:name=".UIControlService"
+            android:name=".UiControlService"
             android:enabled="true"
             android:exported="true" >
             <intent-filter>

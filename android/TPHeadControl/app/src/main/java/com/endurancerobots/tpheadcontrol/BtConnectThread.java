@@ -53,6 +53,10 @@ public class BtConnectThread extends Thread {
     }
 
     public void run() {
+        Log.d(TAG, "thread started");
+
+        mBluetoothAdapter.cancelDiscovery();
+        Log.i(TAG, "cancelDiscovery");
         try {
             mmSocket.connect();
         } catch (Exception e) {
@@ -67,8 +71,7 @@ public class BtConnectThread extends Thread {
             }
             return;
         }
-        mBluetoothAdapter.cancelDiscovery();
-        Log.i(TAG, "cancelDiscovery");
+
     }
 
     public BtDataTransferThread getDataTransferThread() throws NullPointerException {
@@ -79,6 +82,6 @@ public class BtConnectThread extends Thread {
 
     /** Will cancel an in-progress connection, and close the socket */
     public void cancel() {
+        Log.d(TAG,"thread canceled");
     }
-
 }

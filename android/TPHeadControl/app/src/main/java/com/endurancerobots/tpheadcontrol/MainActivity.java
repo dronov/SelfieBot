@@ -18,9 +18,6 @@ import android.widget.Toast;
 
 public class MainActivity extends FragmentActivity {
     public static final int CHOOSE_BLUETOOTH_DEVICE = 0;
-
-    private static final String ACTION_START_CONTROLS = "com.endurancerobots.tpheadcontrol.action.START_CONTROLS";
-    private static final String EXTRA_HEAD_ID = "com.endurancerobots.tpheadcontrol.extra.HEAD_ID";
     private static final String TAG = "MainActivity";
     private static final int REQUEST_ENABLE_BT = 1;
 
@@ -28,8 +25,9 @@ public class MainActivity extends FragmentActivity {
     private BluetoothAdapter mBtAdapter;
     private BroadcastReceiver mReceiver;
     private String mMacAddr ="";
-    private Intent UIControlServiceIntent;
+    private Intent mUiControlServiceIntent;
     private boolean mBluetoothEnabled=true;
+    private Intent mServoControlIntent=null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +54,8 @@ public class MainActivity extends FragmentActivity {
 //            return true;
 //        }else
         if (id == R.id.exit) {
-            stopService(UIControlServiceIntent);
+            if(mUiControlServiceIntent !=null) stopService(mUiControlServiceIntent);
+            if(mServoControlIntent!=null) stopService(mServoControlIntent);
             finish();
             return true;
         }else if(id == R.id.about) {
@@ -81,12 +80,12 @@ public class MainActivity extends FragmentActivity {
 
     public void connect2RobotOnClick(View view) {
         Log.d(TAG, "connect2RobotOnClick pressed");
-//        UIControlService.startUIControls(getApplicationContext(), getHeadId());
+//        UiControlService.startUIControls(getApplicationContext(), getHeadId());
         Log.v(TAG, "startUIControls");
-        UIControlServiceIntent = new Intent(getApplicationContext(), UIControlService.class);
-        UIControlServiceIntent.setAction(ACTION_START_CONTROLS);
-//        intent.putExtra(EXTRA_HEAD_ID, getHeadId());
-        getApplicationContext().startService(UIControlServiceIntent);
+        mUiControlServiceIntent = new Intent(getApplicationContext(), UiControlService.class);
+        mUiControlServiceIntent.setAction(UiControlService.ACTION_START_CONTROLS);
+        mUiControlServiceIntent.putExtra(UiControlService.EXTRA_HEAD_ID, getHeadId());
+        getApplicationContext().startService(mUiControlServiceIntent);
     }
 
     private String getMac(){
@@ -153,7 +152,12 @@ public class MainActivity extends FragmentActivity {
     }
     public void deviceChoosed(String mac) {
         mMacAddr =mac;
-        ServoControlService.startServoControl(getApplicationContext(), getHeadId(), getMac());
+//        mServoControlIntent = ServoControlService.startServoControl(getApplicationContext(), getHeadId(), getMac());
+        mServoControlIntent = new Intent(getApplicationContext(), ServoControlService.class);
+        mServoControlIntent.setAction(ServoControlService.START_SERVO_CONTROL);
+        mServoControlIntent.putExtra(ServoControlService.EXTRA_HEAD_ID, getHeadId());
+        mServoControlIntent.putExtra(ServoControlService.EXTRA_MAC, getMac());
+        getApplicationContext().startService(mServoControlIntent);
     }
 
     @Override
