@@ -284,12 +284,7 @@ public class UiControlService extends Service {
         writeCmd(mOutMsg);
     }
     public void quit()  {
-        if (mMyView != null){
-            if (mWinMgr != null){
-                mWinMgr.removeView(mMyView);
-                mMyView = null;
-            }
-        }
+
         mOutMsg[0] = 'q';
         mOutMsg[1] = 'q';
         mOutMsg[2] = 'q';
@@ -305,6 +300,12 @@ public class UiControlService extends Service {
         Toast.makeText(getApplicationContext(),
                 getString(R.string.connection_closed),
                 Toast.LENGTH_LONG).show();
+        if (mMyView != null){
+            if (mWinMgr != null){
+                mWinMgr.removeView(mMyView);
+                mMyView = null;
+            }
+        }
     }
 
     private void writeCmd(byte[] cmd) {
@@ -323,6 +324,7 @@ public class UiControlService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "Service destroyed");
+        tcpDataTransferThread.cancel();
         super.onDestroy();
     }
 }

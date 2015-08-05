@@ -109,51 +109,52 @@ public class ServoControlService extends Service {
         }
     }
 
-    class ConnectionThread extends AsyncTask<Void,String,Boolean> {
+    class ConnectionThread extends Thread {
         private String stateLast="";
 
-        @Override
-        protected Boolean doInBackground(Void... voids) {
+        public void run() {
             Log.d(TAG, "doInBackground");
             String status="";
             do {
                 status = mServ.connectAsServer();
                 publishProgress(status);
             }while (!status.contains(TcpProxyClient.CONNECT));
-            return true;
-        }
-
-        @Override
-        protected void onProgressUpdate(String... strings) {
-            super.onProgressUpdate(strings);
-            if(stateLast.equals(strings[0]))
-            {
-                Log.i(TAG,strings[0]);
-                stateLast=strings[0];
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Boolean connected) {
-            super.onPostExecute(connected);
-            Log.v(TAG, "Connected: "+String.valueOf(connected));
-            if(connected){
-                Log.v(TAG, "Server is connected");
-                Toast.makeText(getApplicationContext(),
-                        getString(R.string.successful_connection), Toast.LENGTH_LONG).show();
-                mTcpDataTransferThread = new TcpDataTransferThread(mServ);
-                mTcpDataTransferThread.start();
-                // Связываем потоки напрямую
+            Log.v(TAG, "Server is connected");
+            publishProgress(getString(R.string.successful_connection));
+            mTcpDataTransferThread = new TcpDataTransferThread(mServ);
+            mTcpDataTransferThread.start();
+            // Связываем потоки напрямую
 //                mBtDataTransferThread.setOutHandler(mTcpDataTransferThread.getInHandler());
-                if(mBtDataTransferThread!=null)
-                    mTcpDataTransferThread.setOutHandler(mBtDataTransferThread.getInHandler());
-            }else {
-                Log.v(TAG, "Server is not connected");
-                Toast.makeText(getApplicationContext(),
-                        getString(R.string.unsuccessful_connection), Toast.LENGTH_LONG).show();
-                stopSelf();
-            }
+            if(mBtDataTransferThread!=null)
+                mTcpDataTransferThread.setOutHandler(mBtDataTransferThread.getInHandler());
+            cancel();
         }
+
+        public void cancel() {
+
+        }
+
+//        @Override
+//        protected void onPostExecute(Boolean connected) {
+//            super.onPostExecute(connected);
+//            Log.v(TAG, "Connected: "+String.valueOf(connected));
+//            if(connected){
+//                Log.v(TAG, "Server is connected");
+//                Toast.makeText(getApplicationContext(),
+//                        getString(R.string.successful_connection), Toast.LENGTH_LONG).show();
+//                mTcpDataTransferThread = new TcpDataTransferThread(mServ);
+//                mTcpDataTransferThread.start();
+//                // Связываем потоки напрямую
+////                mBtDataTransferThread.setOutHandler(mTcpDataTransferThread.getInHandler());
+//                if(mBtDataTransferThread!=null)
+//                    mTcpDataTransferThread.setOutHandler(mBtDataTransferThread.getInHandler());
+//            }else {
+//                Log.v(TAG, "Server is not connected");
+//                Toast.makeText(getApplicationContext(),
+//                        getString(R.string.unsuccessful_connection), Toast.LENGTH_LONG).show();
+//                stopSelf();
+//            }
+//        }
     }
     private void startTcpThread(String headId, String mac){
         // TODO: 05.08.15 сделать обмен данными между узлами независимым
@@ -166,7 +167,7 @@ public class ServoControlService extends Service {
         }
         mServ = new TcpProxyClient(headId);
         ConnectionThread socketThread = new ConnectionThread();
-        socketThread.execute();
+        socketThread.start();
     }
 
     private boolean bluetoothConnect(String mac) {

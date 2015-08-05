@@ -45,24 +45,24 @@ public class TcpDataTransferThread extends Thread {
         mmInStream = tmpIn;
         mmOutStream = tmpOut;
         // TODO: 05.08.15 сделать обратную связь
-        mInHandler = new Handler(){
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                switch (msg.what){
-                    case BtDataTransferThread.MESSAGE_READ:
-                        try {
-                            write((byte[])msg.obj);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        break;
-                    default:
-                        Log.i(TAG,"UNKNOWN_MESSAGE");
-                        break;
-                }
-            }
-        };
+//        mInHandler = new Handler(){
+//            @Override
+//            public void handleMessage(Message msg) {
+//                super.handleMessage(msg);
+//                switch (msg.what){
+//                    case BtDataTransferThread.MESSAGE_READ:
+//                        try {
+//                            write((byte[])msg.obj);
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                        break;
+//                    default:
+//                        Log.i(TAG,"UNKNOWN_MESSAGE");
+//                        break;
+//                }
+//            }
+//        };
     }
 
     public void run() {
