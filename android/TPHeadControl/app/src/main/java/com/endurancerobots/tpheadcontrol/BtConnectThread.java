@@ -20,14 +20,12 @@ public class BtConnectThread extends Thread {
     private BluetoothAdapter mBluetoothAdapter;
 
     public BtConnectThread(BluetoothDevice device,
-                           BluetoothAdapter adapter,
-                           Handler handler) throws NullPointerException{
+                           BluetoothAdapter adapter) throws NullPointerException{
         // Use a temporary object that is later assigned to mmSocket,
         // because mmSocket is final
 
         BluetoothSocket tmp = null;
         mBluetoothAdapter = adapter;
-        mHandler = handler;
         try {
             Method m = device.getClass().getMethod("createRfcommSocket",new Class[] {int.class});
             tmp = (BluetoothSocket) m.invoke(device,1);
@@ -75,7 +73,7 @@ public class BtConnectThread extends Thread {
     }
 
     public BtDataTransferThread getDataTransferThread() throws NullPointerException {
-        BtDataTransferThread mBtDataTransferThread = new BtDataTransferThread(mmSocket, mHandler);
+        BtDataTransferThread mBtDataTransferThread = new BtDataTransferThread(mmSocket);
         mBtDataTransferThread.start();
         return mBtDataTransferThread;
     }

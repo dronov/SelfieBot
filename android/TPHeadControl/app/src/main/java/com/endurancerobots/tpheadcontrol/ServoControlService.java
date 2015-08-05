@@ -5,7 +5,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -24,14 +23,13 @@ import java.net.SocketException;
 import java.util.Arrays;
 
 public class ServoControlService extends Service {
-    /// TODO: наследоваться от класса Service (v5)
 
     static final String START_SERVO_CONTROL = "com.endurancerobots.tpheadcontrol.action.START_SERVO_CONTROL";
     static final String EXTRA_HEAD_ID = "com.endurancerobots.tpheadcontrol.extra.HEAD_ID";
     static final String EXTRA_MAC = "com.endurancerobots.tpheadcontrol.extra.MAC";
     static final String TAG = "ServoControlService";
 
-    TcpDataTransferThread tcpDataTransferThread;
+    TcpDataTransferThread mTcpDataTransferThread;
     String mMacAddr;
     TcpProxyClient mServ;
     byte[] mInMsg =new byte[5];
@@ -41,17 +39,6 @@ public class ServoControlService extends Service {
     byte mMsgCounter =1;
     static Handler sHandler;
     String mHeadId;
-
-    public static Intent startServoControl(Context context, String headId_, String mac_) {
-        /// TODO: наследоваться от класса Service: скопировать это в MainActivity (v5)
-        Log.v(TAG, "startServoControl");
-        Intent intent = new Intent(context, ServoControlService.class);
-        intent.setAction(START_SERVO_CONTROL);
-        intent.putExtra(EXTRA_HEAD_ID, headId_);
-        intent.putExtra(EXTRA_MAC, mac_);
-        context.startService(intent);
-        return intent;
-    }
 
     public ServoControlService() {
         sHandler = new Handler(){
@@ -74,24 +61,24 @@ public class ServoControlService extends Service {
                     case TcpDataTransferThread.MESSAGE_READ:
                         Log.d(TAG,"Got TCP message "+Arrays.toString((byte[])msg.obj)
                                 +"with length: "+msg.arg1);
-                        try {
-                            writeToBluetooth((byte[])msg.obj);
-                            writeToOperator(((byte[])msg.obj)); // Обратная связь
-                            publishProgress(ComandDecoder.decode((byte[]) msg.obj));
-
-                        } catch (IOException e ) {
-                            e.printStackTrace();
-                            if(isTcpUnreachable) {
-                                writeToOperator(getString(R.string.bluetooth_source_is_unreachable).getBytes());
-                                publishProgress("e1"+getString(R.string.bluetooth_source_is_unreachable));
-                                isTcpUnreachable =false;
-                            }
-                            stopSelf();
-                        } catch (NullPointerException e){
-                            e.printStackTrace();
-                            publishProgress("e2" + getString(R.string.bluetooth_source_is_unreachable_not_connected));
-                            stopSelf();
-                        }
+//                        try {
+////                            writeToBluetooth((byte[])msg.obj);
+////                            writeToOperator(((byte[])msg.obj)); // Обратная связь
+//                            publishProgress(ComandDecoder.decode((byte[]) msg.obj));
+//
+//                        } catch (IOException e ) {
+//                            e.printStackTrace();
+//                            if(isTcpUnreachable) {
+//                                writeToOperator(getString(R.string.bluetooth_source_is_unreachable).getBytes());
+//                                publishProgress("e1"+getString(R.string.bluetooth_source_is_unreachable));
+//                                isTcpUnreachable =false;
+//                            }
+//                            stopSelf();
+//                        } catch (NullPointerException e){
+//                            e.printStackTrace();
+//                            publishProgress("e2" + getString(R.string.bluetooth_source_is_unreachable_not_connected));
+//                            stopSelf();
+//                        }
                         break;
                     case TcpDataTransferThread.CLOSE_CONNECTION:
                         Log.i(TAG, "TCP connection info: " + (String)msg.obj);
@@ -122,11 +109,28 @@ public class ServoControlService extends Service {
         }
     }
 
-    class ConnectionThread extends AsyncTask<Void,Void,Boolean> {
+    class ConnectionThread extends AsyncTask<Void,String,Boolean> {
+        private String stateLast="";
+
         @Override
-        protected Boolean doInBackground(Void... params) {
+        protected Boolean doInBackground(Void... voids) {
             Log.d(TAG, "doInBackground");
-            return mServ.connectAsServer();
+            String status="";
+            do {
+                status = mServ.connectAsServer();
+                publishProgress(status);
+            }while (!status.contains(TcpProxyClient.CONNECT));
+            return true;
+        }
+
+        @Override
+        protected void onProgressUpdate(String... strings) {
+            super.onProgressUpdate(strings);
+            if(stateLast.equals(strings[0]))
+            {
+                Log.i(TAG,strings[0]);
+                stateLast=strings[0];
+            }
         }
 
         @Override
@@ -137,8 +141,12 @@ public class ServoControlService extends Service {
                 Log.v(TAG, "Server is connected");
                 Toast.makeText(getApplicationContext(),
                         getString(R.string.successful_connection), Toast.LENGTH_LONG).show();
-                tcpDataTransferThread = new TcpDataTransferThread(mServ,sHandler);
-                tcpDataTransferThread.start();
+                mTcpDataTransferThread = new TcpDataTransferThread(mServ);
+                mTcpDataTransferThread.start();
+                // Связываем потоки напрямую
+//                mBtDataTransferThread.setOutHandler(mTcpDataTransferThread.getInHandler());
+                if(mBtDataTransferThread!=null)
+                    mTcpDataTransferThread.setOutHandler(mBtDataTransferThread.getInHandler());
             }else {
                 Log.v(TAG, "Server is not connected");
                 Toast.makeText(getApplicationContext(),
@@ -148,17 +156,17 @@ public class ServoControlService extends Service {
         }
     }
     private void startTcpThread(String headId, String mac){
-        // TODO: запускать сервер в отдельном потоке наследованномот TcpDataTransferThread (in v5)
+        // TODO: 05.08.15 сделать обмен данными между узлами независимым
         boolean connected=true;
         connected = bluetoothConnect(mac);
         if(connected) {
             publishProgress(getString(R.string.holder_is_connected));
-            mServ = new TcpProxyClient(headId);
-            ConnectionThread socketThread = new ConnectionThread();
-            socketThread.execute();
         }else {
             publishProgress(getString(R.string.holder_is_not_connected));
         }
+        mServ = new TcpProxyClient(headId);
+        ConnectionThread socketThread = new ConnectionThread();
+        socketThread.execute();
     }
 
     private boolean bluetoothConnect(String mac) {
@@ -166,13 +174,12 @@ public class ServoControlService extends Service {
         BluetoothDevice device = bluetooth.getRemoteDevice(mac);
 
         try {
-            BtConnectThread mBtConnectThread = new BtConnectThread(device, bluetooth, sHandler);
+            BtConnectThread mBtConnectThread = new BtConnectThread(device, bluetooth);
             mBtConnectThread.start();
 
             mBtDataTransferThread = mBtConnectThread.getDataTransferThread();
+//            mBtDataTransferThread.setOutHandler(sHandler);
             mBtConnectThread.cancel();
-
-//            writeToBluetooth(new String("ping").getBytes());
             return true;
         }catch (NullPointerException e){
             e.printStackTrace();
@@ -182,7 +189,7 @@ public class ServoControlService extends Service {
 
     private void writeToOperator(byte[] bytes){
         try {
-            tcpDataTransferThread.write(bytes);
+            mTcpDataTransferThread.write(bytes);
             Log.v(TAG, "writeToOperator: " + Arrays.toString(bytes));
         } catch (IOException e) {
             publishProgress("e3"+getString(R.string.cant_write_to_operator));
@@ -230,7 +237,7 @@ public class ServoControlService extends Service {
         try {
             mBtDataTransferThread.cancel();
             publishProgress(getString(R.string.bt_thread_closed));
-            tcpDataTransferThread.cancel();
+            mTcpDataTransferThread.cancel();
             publishProgress(getString(R.string.server_closed));
         }catch (NullPointerException e){
             e.printStackTrace();
@@ -248,64 +255,5 @@ public class ServoControlService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
-    }
-
-    private String runTcpServer() {
-        Log.v(TAG, "runTcpServer");
-        try {
-            InputStream inStream = mServ.getInputStream();
-            while (true){
-                int read = inStream.read(mInMsg);
-                Log.d(TAG, "received msg: " + Arrays.toString(mInMsg) + "read: " + read);
-                try{
-                    writeToBluetooth(mInMsg);
-                    switch (mInMsg[0]) {
-                        case 119:
-                            publishProgress("Command: UP (" + mInMsg[0] + ")");
-                            writeToOperator(new byte[]{mInMsg[0]});
-                            break;
-                        case 97:
-                            publishProgress("Command: LEFT (" + mInMsg[0] + ")");
-                            writeToOperator(new byte[]{mInMsg[0]});
-                            break;
-                        case 115:
-                            publishProgress("Command: DOWN (" + mInMsg[0] + ")");
-                            writeToOperator(new byte[]{mInMsg[0]});
-                            break;
-                        case 100:
-                            publishProgress("Command: RIGHT (" + mInMsg[0] + ")");
-                            writeToOperator(new byte[]{mInMsg[0]});
-                            break;
-                        case 113:
-                            publishProgress("Command: CLOSE CONNECTION (" + mInMsg[0] + ")");
-                            writeToOperator(new byte[]{mInMsg[0]});
-                            return "CLOSE";
-                        default:
-                            publishProgress("Unknown command: (" + mInMsg[0] + ")");
-                            writeToOperator(new String("Unknown command: ("+ mInMsg[0]+")").getBytes());
-                    }
-                }catch (IOException e) {
-                    Log.e(TAG, e.getMessage());
-                    publishProgress(getString(R.string.bluetooth_source_is_unreachable));
-                    writeToOperator(getString(R.string.bluetooth_source_is_unreachable).getBytes());
-                }
-                catch (NullPointerException e){
-                    Log.w(TAG,e.getMessage());
-                }
-            }
-        } catch (InterruptedIOException e) {
-            //if timeout occurs
-            Log.e(TAG, "timeout occurs " + e.getMessage() + "!!!");
-        } catch (SocketException se){
-            if(se.getMessage().contains("ECONNRESET")){
-                Log.e(TAG, "client cuts wire!!! " + se.getMessage() + "!!!");
-                publishProgress(getString(R.string.connection_cutted));
-            } else{
-                Log.e(TAG, "problem with socket"+se.getMessage());}
-        } catch (IOException e) {
-            Log.e(TAG, "IOException: " + e.getMessage() + "!!!");
-            Toast.makeText(getApplicationContext(),"problem with socket",Toast.LENGTH_SHORT).show();
-        }
-        return "CLOSE";
     }
 }

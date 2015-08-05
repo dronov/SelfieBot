@@ -2,13 +2,14 @@ package com.endurancerobots.tpheadcontrol;
 
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
-import android.util.TimeUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by ilya on 17.07.15.
@@ -19,22 +20,24 @@ public class BtDataTransferThread extends Thread {
     public static final int MESSAGE_READ = 1;
     public static final int CONNECTION_INFO = 2;
     public static final int READING_FAILED = 3;
+    private static final int MESSAGE_WRITE = 4;
     private final BluetoothSocket mmSocket;
-    private InputStream mmInStream;
+    private final InputStream mmInStream;
     private final OutputStream mmOutStream;
-    private Handler mHandler;
+    private final Handler mInHandler;
+    private Handler mOutHandler = null; // TODO: Соеденить напрямую с потоком TCP (Учесть Broadcast-сообщения). Убрать после 07.08.2015
     boolean mSendInLoop =false;
     private byte[] mBytes=null;
+    private int counter=0;
 
 
-//    private android.os.Handler mHandler;
+//    private android.os.Handler mOutHandler;
 
 
-    public BtDataTransferThread(BluetoothSocket socket, Handler handler) throws NullPointerException {
+    public BtDataTransferThread(BluetoothSocket socket) throws NullPointerException {
         mmSocket = socket;
         InputStream tmpIn = null;
         OutputStream tmpOut = null;
-        mHandler = handler;
 
         // Get the input and output streams, using temp objects because
         // member streams are final
@@ -46,6 +49,25 @@ public class BtDataTransferThread extends Thread {
         }
         mmInStream = tmpIn;
         mmOutStream = tmpOut;
+
+        mInHandler = new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                switch (msg.what){
+                    case TcpDataTransferThread.MESSAGE_READ:
+                        try {
+                            write((byte[])msg.obj);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    default:
+                        Log.i(TAG,"UNKNOWN_MESSAGE");
+                        break;
+                }
+            }
+        };
     }
 
     public void run() {
@@ -57,31 +79,47 @@ public class BtDataTransferThread extends Thread {
         int bytes; // bytes returned from read()
         // Keep listening to the InputStream until an exception occurs
 
+                    // TODO: 05.08.15 сделать обратную связь
             while (true) {
-                try {
-                    bytes = mmInStream.read(buffer);
-
-                    System.arraycopy(buffer, 0, pack, packCurrentLen, bytes); // TODO: Исправить до 01.09.2015. bytes не могут быть больше 1
-                    packCurrentLen += bytes;
-                    if (packCurrentLen == packLen) {
-                        String s = new String(pack);
-                        Log.v(TAG, "read " + " packet: '" + s + "' (" + Arrays.toString(pack) + ")");
-                        // Send the obtained bytes to the UI activity
-                        mHandler.obtainMessage(MESSAGE_READ, pack.length, -1,pack).sendToTarget();
-                        packCurrentLen = 0;
-                    } else {
-                        Log.v(TAG, "read " + bytes + " bytes: '" + Arrays.toString(buffer) + "'");
-                    }
-                } catch (NullPointerException e){
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    Log.e(TAG, "Failed with reading: " + e.getMessage());
+//                try {
+//                    bytes = mmInStream.read(buffer);
+//                    System.arraycopy(buffer, 0, pack, packCurrentLen, bytes);
+//                     TODO: Исправить до 01.09.2015. bytes не могут быть больше 1
+//                    packCurrentLen += bytes;
+//                    if (packCurrentLen == packLen) {
+//                        String s = new String(pack);
+//                        Log.v(TAG, "read "+" packet: '" +s+ "' (" + Arrays.toString(pack) + ")");
+//                        if(mOutHandler!=null) {
+//                            mOutHandler.obtainMessage(MESSAGE_READ,
+//                                    pack.length, -1, pack).sendToTarget();
+//                        }
+//                        packCurrentLen = 0;
+//                    } else {
+//                        Log.v(TAG, "read " + bytes + " bytes: '" + Arrays.toString(buffer) + "'");
+//                    }
+//                } catch (NullPointerException e){
+//                    e.printStackTrace();
+//                } catch (IOException e) {
+//                    Log.e(TAG, "Failed with reading: " + e.getMessage());
 //                    break;
-                    mHandler.obtainMessage(READING_FAILED, e.getMessage().length(), -1,
-                            e.getMessage()).sendToTarget();
-                } catch (ArrayIndexOutOfBoundsException e){
-                    Log.e(TAG, e.getMessage());
-                }
+//                    mOutHandler.obtainMessage(READING_FAILED, e.getMessage().length(), -1,
+//                            e.getMessage()).sendToTarget();
+//                } catch (ArrayIndexOutOfBoundsException e){
+//                    Log.e(TAG, e.getMessage());
+//                }
+//                emulateResponse(pack);
+            }
+    }
+
+    private void emulateResponse(byte[] pack) {
+        if(mOutHandler!=null) {
+            pack = "12345".getBytes(); // TODO: 05.08.15 убрать эмуляцию
+            mOutHandler.obtainMessage(MESSAGE_READ, pack.length, -1, pack).sendToTarget();
+        }
+        try {
+            TimeUnit.SECONDS.sleep(3);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -98,6 +136,14 @@ public class BtDataTransferThread extends Thread {
         } catch (IOException e) {Log.e(TAG, e.getMessage());}
         Log.d(TAG,"thread canceled");
     }
+
+    public Handler getInHandler() {
+        return mInHandler;
+    }
+
+//    public void setOutHandler(Handler mOutHandler) {
+//        this.mOutHandler = mOutHandler;
+//    }
 }
 
 

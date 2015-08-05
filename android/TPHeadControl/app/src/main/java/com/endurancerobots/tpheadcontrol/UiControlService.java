@@ -46,50 +46,19 @@ public class UiControlService extends Service {
     private TcpDataTransferThread tcpDataTransferThread;
 
     private static final String TAG = "UiControlService";
+    private SocketThread socketThread;
 
     @SuppressWarnings("deprecation")
     @Override
     public void onStart(Intent intent, int startId) {
         super.onStart(intent, startId);
+        Log.i(TAG,"onStart");
         if(intent!=null) {
             String action = intent.getAction();
             if((ACTION_START_CONTROLS).equals(action))
             mHeadId = intent.getStringExtra(EXTRA_HEAD_ID);
+            Log.i(TAG,"mHeadId :"+mHeadId);
         }
-    }
-
-    class SocketThread extends AsyncTask<Void,Void,Boolean> {
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            Log.d(TAG, "doInBackground");
-            return mS.connectAsClient();
-        }
-
-        @Override
-        protected void onPostExecute(Boolean connected) {
-            super.onPostExecute(connected);
-            Log.d(TAG, "onPostExecute");
-            Log.d(TAG, "connected="+connected);
-            if (!connected) {
-                Log.e(TAG, "Client was not connected!");
-                Toast.makeText(getApplicationContext(),
-                        getString(R.string.unsuccessful_connection), Toast.LENGTH_LONG).show();
-                stopSelf();
-            } else {
-                Log.d(TAG, "CONNECT");
-                Toast.makeText(getApplicationContext(),
-                        getString(R.string.successful_connection), Toast.LENGTH_LONG).show();
-                tcpDataTransferThread = new TcpDataTransferThread(mS, sHandler);
-                tcpDataTransferThread.start();
-                setupLayout();
-                setupClicks();
-            }
-        }
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
         Log.d(TAG, "Service Created");
         sHandler = new Handler(){
             @Override
@@ -111,8 +80,38 @@ public class UiControlService extends Service {
         Log.i(TAG, "UI Control got Head Id:" + mHeadId);
 
         mS = new TcpProxyClient(mHeadId); // Пытаемся подключиться
-        SocketThread socketThread = new SocketThread();
+        socketThread = new SocketThread();
         socketThread.execute();
+    }
+
+    class SocketThread extends AsyncTask<Void,Void,Boolean> {
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            Log.d(TAG, "doInBackground");
+            return TcpProxyClient.CONNECT.equals(mS.connectAsClient()); // TODO: 05.08.15 исправить сравнение
+        }
+
+        @Override
+        protected void onPostExecute(Boolean connected) {
+            super.onPostExecute(connected);
+            Log.d(TAG, "onPostExecute");
+            Log.d(TAG, "connected="+connected);
+            if (!connected) {
+                Log.e(TAG, "Client was not connected!");
+                Toast.makeText(getApplicationContext(),
+                        getString(R.string.unsuccessful_connection), Toast.LENGTH_LONG).show();
+                stopSelf();
+            } else {
+                Log.d(TAG, "CONNECT");
+                Toast.makeText(getApplicationContext(),
+                        getString(R.string.successful_connection), Toast.LENGTH_LONG).show();
+                tcpDataTransferThread = new TcpDataTransferThread(mS);
+                tcpDataTransferThread.setOutHandler(sHandler);
+                tcpDataTransferThread.start();
+                setupLayout();
+                setupClicks();
+            }
+        }
     }
 
     private void setupLayout() {

@@ -1,13 +1,12 @@
 package com.endurancerobots.tpheadcontrol;
 
-import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Socket;
 import java.util.Arrays;
 
 /**
@@ -19,19 +18,21 @@ public class TcpDataTransferThread extends Thread {
     public static final int MESSAGE_READ = 10;
     public static final int CONNECTION_INFO = 20;
     public static final int CLOSE_CONNECTION = 113;
+    public static final int MESSAGE_WRITE = 30;
 
     private final InputStream mmInStream;
     private final OutputStream mmOutStream;
     private final TcpProxyClient mmSocket;
-    private Handler mHandler;
+    private Handler mOutHandler=null;
+    Handler mInHandler;   // TODO: 05.08.15 сделать обратную связь
     private boolean mSendInLoop=false;
     private byte[] mBytes;
+    private byte counter=0;
 
-    public TcpDataTransferThread(TcpProxyClient socket, Handler handler) throws NullPointerException {
+    public TcpDataTransferThread(TcpProxyClient socket) throws NullPointerException {
         mmSocket = socket;
         InputStream tmpIn = null;
         OutputStream tmpOut = null;
-        mHandler = handler;
 
         // Get the input and output streams, using temp objects because
         // member streams are final
@@ -43,10 +44,29 @@ public class TcpDataTransferThread extends Thread {
         }
         mmInStream = tmpIn;
         mmOutStream = tmpOut;
+        // TODO: 05.08.15 сделать обратную связь
+        mInHandler = new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                switch (msg.what){
+                    case BtDataTransferThread.MESSAGE_READ:
+                        try {
+                            write((byte[])msg.obj);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    default:
+                        Log.i(TAG,"UNKNOWN_MESSAGE");
+                        break;
+                }
+            }
+        };
     }
 
     public void run() {
-        Log.d(TAG,"thread started");
+        Log.d(TAG, "thread started");
         byte[] buffer = new byte[128];  // buffer store for the stream
         int bytes; // bytes returned from read()
 
@@ -55,18 +75,19 @@ public class TcpDataTransferThread extends Thread {
             try {
                 bytes = mmInStream.read(buffer);
                 Log.v(TAG, "read " + bytes + " bytes:" + Arrays.toString(buffer));
-                // Send the obtained bytes to the UI activity
-                mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
-                        .sendToTarget();
-                if(buffer[0]==CLOSE_CONNECTION){
-                    mHandler.obtainMessage(CLOSE_CONNECTION, -1, -1, buffer)
-                            .sendToTarget();
+                if(mOutHandler!=null) {
+                    mOutHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+                    if(buffer[0]==CLOSE_CONNECTION){
+                        mOutHandler.obtainMessage(CLOSE_CONNECTION, -1, -1, buffer)
+                                .sendToTarget();
+                    }
                 }
-
             } catch (IOException e) {
                 Log.e(TAG,e.getMessage());
-                mHandler.obtainMessage(CONNECTION_INFO, -1, -1, "Connection lost")
-                        .sendToTarget();
+                if(mOutHandler!=null) {
+                    mOutHandler.obtainMessage(CONNECTION_INFO, -1, -1, "Connection lost")
+                            .sendToTarget();
+                }
             }
         }
     }
@@ -84,4 +105,12 @@ public class TcpDataTransferThread extends Thread {
             Log.d(TAG, "thread canceled");
         } catch (Exception e) {Log.e(TAG, e.getMessage());}
     }
+
+    public void setOutHandler(Handler mOutHandler) {
+        this.mOutHandler = mOutHandler;
+    }
+// TODO: 05.08.15 сделать обратную связь
+//    public Handler getInHandler() {
+//        return mInHandler;
+//    }
 }

@@ -18,22 +18,23 @@ public class TcpProxyClient extends Socket {
     public static final int TCP_PROXY_SERVER_PORT = 4445;
 
     private static final String TAG = "TcpProxyClient";
-    private static final String ERROR = "\r\nERROR\r\n";
-    private static final String WAIT = "\r\nWAIT\r\n";
-    private static final String CONNECT = "\r\nCONNECT\r\n";
-    private static final String NOT_RESPONSED = "NOT_RESP";
-    private static final String NOT_CONNECTED = "NOT_CONNECTED";
+    public static final String ERROR = "\r\nERROR\r\n";
+    public static final String WAIT = "\r\nWAIT\r\n";
+    public static final String CONNECT = "\r\nCONNECT\r\n";
+    public static final String NOT_RESPONSED = "NOT_RESP";
+    public static final String NOT_CONNECTED = "NOT_CONNECTED";
     private String mHeadId="";
 
     private byte mInputBuf[] = new byte[50];
+    private String mStrId;
 
-    public boolean connectAsClient(){
+    public String connectAsClient(){
         Log.v(TAG,"connectAsClient");
-        return CONNECT.equals(connectToProxyServer(PROXY_IP,TCP_PROXY_SERVER_PORT,"G"+mHeadId+"\r"));
+        return connectToProxyServer(PROXY_IP, TCP_PROXY_SERVER_PORT, "G" + mHeadId + "\r");
     }
-    public boolean connectAsServer() {
-        while (!CONNECT.equals(connectToProxyServer(PROXY_IP, TCP_PROXY_SERVER_PORT, "S" + mHeadId + "\r")));
-        return true;
+    public String connectAsServer() {
+        // TODO: 05.08.15 исправить подключение
+        return connectToProxyServer(PROXY_IP, TCP_PROXY_SERVER_PORT, "S" + mHeadId + "\r");
     }
 
     public TcpProxyClient(String headId){
@@ -46,7 +47,7 @@ public class TcpProxyClient extends Socket {
      * @return true if connection is successful
      */
     private String connectToProxyServer(String proxyIp, int proxyServerPort, String headId) {
-        String mStrId = headId;
+        mStrId = headId;
         if (runTcpClient(proxyIp, proxyServerPort)) {
                 try {
                     String s="";
