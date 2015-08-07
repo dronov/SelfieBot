@@ -5,21 +5,17 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InterruptedIOException;
 import java.io.OutputStream;
-import java.net.SocketException;
 import java.util.Arrays;
 
 public class ServoControlService extends Service {
@@ -29,11 +25,11 @@ public class ServoControlService extends Service {
     static final String EXTRA_MAC = "com.endurancerobots.tpheadcontrol.extra.MAC";
     static final String TAG = "ServoControlService";
 
-    TcpDataTransferThread mTcpDataTransferThread;
+    TcpDataTransferThread mTcpTransport;
     String mMacAddr;
-    TcpProxyClient mServ;
+    ProxyConnector connector;
     byte[] mInMsg =new byte[5];
-    BtDataTransferThread mBtDataTransferThread;
+    BtDataTransferThread mBtTransport;
     OutputStream mOutStream = null;
     boolean mBtTransferIsEnabled=true;
     byte mMsgCounter =1;
@@ -43,16 +39,17 @@ public class ServoControlService extends Service {
     public ServoControlService() {
         sHandler = new Handler(){
             public boolean isTcpUnreachable =true;
+            String TAG = ServoControlService.TAG+"hm";
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
                 switch (msg.what){
                     case BtDataTransferThread.MESSAGE_READ:
-                        Log.d(TAG, "Got bluetooth message " + Arrays.toString((byte[]) msg.obj)
+                        Log.d(TAG, "Bt MESSAGE_READ" + Arrays.toString((byte[]) msg.obj)
                                 + "with length: " + msg.arg1);
                         break;
                     case BtDataTransferThread.CONNECTION_INFO:
-                        Log.v(TAG, "Got INFO message from device" + (String) msg.obj);
+                        Log.v(TAG, "Bt CONNECTION_INFO" + (String) msg.obj);
                         break;
                     case BtDataTransferThread.READING_FAILED:
                         publishProgress("e4"+getString(R.string.bluetooth_source_is_unreachable));
@@ -81,11 +78,28 @@ public class ServoControlService extends Service {
 //                        }
                         break;
                     case TcpDataTransferThread.CLOSE_CONNECTION:
-                        Log.i(TAG, "TCP connection info: " + (String)msg.obj);
+                        Log.i(TAG, "TCP CLOSE_CONNECTION: " + (String)msg.obj);
                         stopSelf();
                         break;
                     case TcpDataTransferThread.CONNECTION_INFO:
                         Log.v(TAG, "TCP connection info: " + (String)msg.obj);
+                        break;
+                    case ProxyConnector.CONNECTED_SOCKET:
+                        publishProgress(getString(R.string.successful_connection));
+                        mTcpTransport = new TcpDataTransferThread(connector.getSocket());
+                        mTcpTransport.start();
+                        if(mBtTransport !=null)
+                            mTcpTransport.setOutHandler(mBtTransport.getInHandler());
+                        break;
+                    case BtConnectThread.BLUETOOTH_SOCKET_OPEN:
+                        publishProgress(getString(R.string.holder_is_connected));
+                        mBtTransport = new BtDataTransferThread((BluetoothSocket)msg.obj);
+                        mBtTransport.start();
+                        if(mTcpTransport !=null)
+                            mTcpTransport.setOutHandler(mBtTransport.getInHandler());
+                        break;
+                    case BtConnectThread.BLUETOOTH_SOCKET_CLOSE:
+                        publishProgress(getString(R.string.holder_is_not_connected));
                         break;
                     default:
                         Log.w(TAG,"Unknown message "+Arrays.toString((byte[])msg.obj)
@@ -109,88 +123,19 @@ public class ServoControlService extends Service {
         }
     }
 
-    class ConnectionThread extends Thread {
-        private String stateLast="";
-
-        public void run() {
-            Log.d(TAG, "doInBackground");
-            String status="";
-            do {
-                status = mServ.connectAsServer();
-                publishProgress(status);
-            }while (!status.contains(TcpProxyClient.CONNECT));
-            Log.v(TAG, "Server is connected");
-            publishProgress(getString(R.string.successful_connection));
-            mTcpDataTransferThread = new TcpDataTransferThread(mServ);
-            mTcpDataTransferThread.start();
-            // Связываем потоки напрямую
-//                mBtDataTransferThread.setOutHandler(mTcpDataTransferThread.getInHandler());
-            if(mBtDataTransferThread!=null)
-                mTcpDataTransferThread.setOutHandler(mBtDataTransferThread.getInHandler());
-            cancel();
-        }
-
-        public void cancel() {
-
-        }
-
-//        @Override
-//        protected void onPostExecute(Boolean connected) {
-//            super.onPostExecute(connected);
-//            Log.v(TAG, "Connected: "+String.valueOf(connected));
-//            if(connected){
-//                Log.v(TAG, "Server is connected");
-//                Toast.makeText(getApplicationContext(),
-//                        getString(R.string.successful_connection), Toast.LENGTH_LONG).show();
-//                mTcpDataTransferThread = new TcpDataTransferThread(mServ);
-//                mTcpDataTransferThread.start();
-//                // Связываем потоки напрямую
-////                mBtDataTransferThread.setOutHandler(mTcpDataTransferThread.getInHandler());
-//                if(mBtDataTransferThread!=null)
-//                    mTcpDataTransferThread.setOutHandler(mBtDataTransferThread.getInHandler());
-//            }else {
-//                Log.v(TAG, "Server is not connected");
-//                Toast.makeText(getApplicationContext(),
-//                        getString(R.string.unsuccessful_connection), Toast.LENGTH_LONG).show();
-//                stopSelf();
-//            }
-//        }
-    }
     private void startTcpThread(String headId, String mac){
-        // TODO: 05.08.15 сделать обмен данными между узлами независимым
-        boolean connected=true;
-        connected = bluetoothConnect(mac);
-        if(connected) {
-            publishProgress(getString(R.string.holder_is_connected));
-        }else {
-            publishProgress(getString(R.string.holder_is_not_connected));
-        }
-        mServ = new TcpProxyClient(headId);
-        ConnectionThread socketThread = new ConnectionThread();
-        socketThread.start();
-    }
-
-    private boolean bluetoothConnect(String mac) {
         BluetoothAdapter bluetooth = BluetoothAdapter.getDefaultAdapter();
         BluetoothDevice device = bluetooth.getRemoteDevice(mac);
+        BtConnectThread mBtConnectThread = new BtConnectThread(device, bluetooth,sHandler);
+        mBtConnectThread.start();
 
-        try {
-            BtConnectThread mBtConnectThread = new BtConnectThread(device, bluetooth);
-            mBtConnectThread.start();
-
-            mBtDataTransferThread = mBtConnectThread.getDataTransferThread();
-//            mBtDataTransferThread.setOutHandler(sHandler);
-            mBtConnectThread.cancel();
-            return true;
-        }catch (NullPointerException e){
-            e.printStackTrace();
-        }
-        return false;
+        connector = new ProxyConnector(sHandler);
+        connector.startAsServer(headId);
     }
 
     private void writeToOperator(byte[] bytes){
         try {
-            mTcpDataTransferThread.write(bytes);
+            mTcpTransport.write(bytes);
             Log.v(TAG, "writeToOperator: " + Arrays.toString(bytes));
         } catch (IOException e) {
             publishProgress("e3"+getString(R.string.cant_write_to_operator));
@@ -200,7 +145,7 @@ public class ServoControlService extends Service {
 
     private void writeToBluetooth(byte[] bytes)throws IOException, NullPointerException {
 //            if(mBtTransferIsEnabled) {
-        mBtDataTransferThread.write(bytes);
+        mBtTransport.write(bytes);
         mMsgCounter++;
         //            }
     }
@@ -236,9 +181,9 @@ public class ServoControlService extends Service {
     public void onDestroy() {
         Log.d(TAG, "Service atempting to destroy");
         try {
-            mBtDataTransferThread.cancel();
+            mBtTransport.cancel();
             publishProgress(getString(R.string.bt_thread_closed));
-            mTcpDataTransferThread.cancel();
+            mTcpTransport.cancel();
             publishProgress(getString(R.string.server_closed));
         }catch (NullPointerException e){
             e.printStackTrace();

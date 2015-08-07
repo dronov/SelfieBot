@@ -14,18 +14,24 @@ import java.lang.reflect.Method;
  * Created by ilya on 17.07.15.
  */
 public class BtConnectThread extends Thread {
+    public static final int BLUETOOTH_SOCKET_OPEN = 112;
+    public static final int BLUETOOTH_SOCKET_CLOSE = 211;
+
     private static final String TAG = "BtConnectThread";
     private final BluetoothSocket mmSocket;
-    private Handler mHandler;
+    private Handler mOutHandler;
     private BluetoothAdapter mBluetoothAdapter;
+    private boolean isRunning=true;
 
     public BtConnectThread(BluetoothDevice device,
-                           BluetoothAdapter adapter) throws NullPointerException{
+                           BluetoothAdapter adapter,
+                           Handler handler) throws NullPointerException{
         // Use a temporary object that is later assigned to mmSocket,
         // because mmSocket is final
 
         BluetoothSocket tmp = null;
         mBluetoothAdapter = adapter;
+        mOutHandler = handler;
         try {
             Method m = device.getClass().getMethod("createRfcommSocket",new Class[] {int.class});
             tmp = (BluetoothSocket) m.invoke(device,1);
@@ -57,11 +63,13 @@ public class BtConnectThread extends Thread {
         Log.i(TAG, "cancelDiscovery");
         try {
             mmSocket.connect();
+            mOutHandler.obtainMessage(BLUETOOTH_SOCKET_OPEN,mmSocket).sendToTarget();
         } catch (Exception e) {
             Log.e(TAG, e.getMessage() + "\ntrying to close the socket");
             // Unable to connect; close the socket and get out
             try {
                 mmSocket.close();
+                mOutHandler.obtainMessage(BLUETOOTH_SOCKET_CLOSE).sendToTarget();
             } catch (IOException closeException) {
                 Log.e(TAG,closeException.getMessage());
             } catch (NullPointerException ne){
@@ -80,6 +88,7 @@ public class BtConnectThread extends Thread {
 
     /** Will cancel an in-progress connection, and close the socket */
     public void cancel() {
+        isRunning=false;
         Log.d(TAG,"thread canceled");
     }
 }

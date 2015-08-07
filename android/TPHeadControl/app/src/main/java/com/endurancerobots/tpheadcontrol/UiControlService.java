@@ -14,6 +14,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -21,7 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
-import java.net.SocketException;
+import java.net.Socket;
 import java.util.Arrays;
 
 public class UiControlService extends Service {
@@ -36,7 +37,7 @@ public class UiControlService extends Service {
     private WindowManager.LayoutParams mPausedLayoutParams;
     private WindowManager mWinMgr;
     private View mMyView;
-    private TcpProxyClient mS;
+    private ProxyConnector connector;
     private byte mOutMsg[] = new byte[5];
     private float mXDelta;
 
@@ -46,70 +47,62 @@ public class UiControlService extends Service {
     private TcpDataTransferThread tcpDataTransferThread;
 
     private static final String TAG = "UiControlService";
-    private SocketThread socketThread;
+
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        setupLayout();
+        setupClicks();
+    }
 
     @SuppressWarnings("deprecation")
     @Override
     public void onStart(Intent intent, int startId) {
         super.onStart(intent, startId);
-        Log.i(TAG,"onStart");
-        if(intent!=null) {
+        Log.i(TAG, "onStart");
+        if (intent != null) {
             String action = intent.getAction();
-            if((ACTION_START_CONTROLS).equals(action))
-            mHeadId = intent.getStringExtra(EXTRA_HEAD_ID);
-            Log.i(TAG,"mHeadId :"+mHeadId);
-        }
-        Log.d(TAG, "Service Created");
-        sHandler = new Handler(){
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                switch (msg.what){
-                    case TcpDataTransferThread.MESSAGE_READ:
-                        Log.i(TAG, "sHandler got message: " + msg.arg1 + " "
-                                + msg.arg2 + " " + Arrays.toString(((byte[]) msg.obj)));
-                        setInfo(ComandDecoder.decode((byte[]) msg.obj));
-                        break;
-                    default:
-                        Log.w(TAG,"sHandler got Unknown message "+msg.arg1+" "+msg.arg2+" "+msg.obj);
-                }
-            }
-        };
-        Log.d(TAG, "onCreate");
+            if ((ACTION_START_CONTROLS).equals(action)) {
+//                Thread keysThread = new Thread(){
+//                    @Override
+//                    public void run() {
+//
+//                    }
+//                };
+//                keysThread.start();
 
-        Log.i(TAG, "UI Control got Head Id:" + mHeadId);
+                mHeadId = intent.getStringExtra(EXTRA_HEAD_ID);
+                Log.i(TAG, "mHeadId :" + mHeadId);
 
-        mS = new TcpProxyClient(mHeadId); // Пытаемся подключиться
-        socketThread = new SocketThread();
-        socketThread.execute();
-    }
+                sHandler = new Handler() {
+                    @Override
+                    public void handleMessage(Message msg) {
+                        super.handleMessage(msg);
+                        switch (msg.what) {
+                            case TcpDataTransferThread.MESSAGE_READ:
+                                Log.i(TAG, "sHandler got message: " + msg.arg1 + " "
+                                        + msg.arg2 + " " + Arrays.toString(((byte[]) msg.obj)));
+                                setInfo(ComandDecoder.decode((byte[]) msg.obj));
+                                break;
+                            case ProxyConnector.CONNECTED_SOCKET:
+                                Log.d(TAG, "CONNECT");
+                                setInfo(getString(R.string.successful_connection));
+                                tcpDataTransferThread = new TcpDataTransferThread((Socket) msg.obj);
+                                tcpDataTransferThread.setOutHandler(sHandler);
+                                tcpDataTransferThread.start();
+                                break;
+                            default:
+                                Log.w(TAG, "sHandler got Unknown message " + msg.arg1 + " " + msg.arg2 + " " + msg.obj);
+                        }
+                    }
+                };
+                Log.d(TAG, "onCreate");
 
-    class SocketThread extends AsyncTask<Void,Void,Boolean> {
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            Log.d(TAG, "doInBackground");
-            return TcpProxyClient.CONNECT.equals(mS.connectAsClient()); // TODO: 05.08.15 исправить сравнение
-        }
+                Log.i(TAG, "UI Control got Head Id:" + mHeadId);
 
-        @Override
-        protected void onPostExecute(Boolean connected) {
-            super.onPostExecute(connected);
-            Log.d(TAG, "onPostExecute");
-            Log.d(TAG, "connected="+connected);
-            if (!connected) {
-                Log.e(TAG, "Client was not connected!");
-                Toast.makeText(getApplicationContext(),
-                        getString(R.string.unsuccessful_connection), Toast.LENGTH_LONG).show();
-                stopSelf();
-            } else {
-                Log.d(TAG, "CONNECT");
-                Toast.makeText(getApplicationContext(),
-                        getString(R.string.successful_connection), Toast.LENGTH_LONG).show();
-                tcpDataTransferThread = new TcpDataTransferThread(mS);
-                tcpDataTransferThread.setOutHandler(sHandler);
-                tcpDataTransferThread.start();
-                setupLayout();
-                setupClicks();
+                connector = new ProxyConnector(sHandler); // Пытаемся подключиться
+                connector.startAsClient(mHeadId);
             }
         }
     }
@@ -137,6 +130,12 @@ public class UiControlService extends Service {
         mPausedLayoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
 
         LayoutInflater layoutInflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        ViewGroup viewGroup = new ViewGroup(getApplicationContext()) {
+            @Override
+            protected void onLayout(boolean changed, int l, int t, int r, int b) {
+
+            }
+        };
         mMyView = layoutInflater.inflate(R.layout.keys, null);
 
         mWinMgr = (WindowManager) getSystemService(WINDOW_SERVICE);
@@ -256,8 +255,10 @@ public class UiControlService extends Service {
 
     private void setInfo(String info) {
         Log.i(TAG, info);
-        TextView tvCmdDebug = (TextView) mMyView.findViewById(R.id.cmdDebug);
-        tvCmdDebug.setText(info);
+        if(mMyView!=null) {
+            TextView tvCmdDebug = (TextView) mMyView.findViewById(R.id.cmdDebug);
+            tvCmdDebug.setText(info);
+        }
     }
 
     public void turnLeft()  {
@@ -284,28 +285,22 @@ public class UiControlService extends Service {
         writeCmd(mOutMsg);
     }
     public void quit()  {
-
-        mOutMsg[0] = 'q';
-        mOutMsg[1] = 'q';
-        mOutMsg[2] = 'q';
-        mOutMsg[3] = 'q';
-        mOutMsg[4] = 'q';
-        writeCmd(mOutMsg);
-        try {
-            mS.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Problem with closing socket" + e.getMessage());
-        }
-        Log.i(TAG, "Connection closed");
-        Toast.makeText(getApplicationContext(),
-                getString(R.string.connection_closed),
-                Toast.LENGTH_LONG).show();
         if (mMyView != null){
             if (mWinMgr != null){
                 mWinMgr.removeView(mMyView);
                 mMyView = null;
             }
         }
+        mOutMsg[0] = 'q';
+        mOutMsg[1] = 'q';
+        mOutMsg[2] = 'q';
+        mOutMsg[3] = 'q';
+        mOutMsg[4] = 'q';
+        writeCmd(mOutMsg);
+        Log.i(TAG, "Connection closed");
+        Toast.makeText(getApplicationContext(),
+                getString(R.string.connection_closed),
+                Toast.LENGTH_LONG).show();
     }
 
     private void writeCmd(byte[] cmd) {
@@ -324,7 +319,7 @@ public class UiControlService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "Service destroyed");
-        tcpDataTransferThread.cancel();
+//        tcpDataTransferThread.cancel();
         super.onDestroy();
     }
 }

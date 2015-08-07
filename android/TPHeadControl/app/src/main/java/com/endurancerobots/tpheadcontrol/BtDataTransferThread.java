@@ -29,7 +29,7 @@ public class BtDataTransferThread extends Thread {
     boolean mSendInLoop =false;
     private byte[] mBytes=null;
     private int counter=0;
-
+    private boolean isRunning=true;
 
 //    private android.os.Handler mOutHandler;
 
@@ -80,7 +80,7 @@ public class BtDataTransferThread extends Thread {
         // Keep listening to the InputStream until an exception occurs
 
                     // TODO: 05.08.15 сделать обратную связь
-            while (true) {
+            while (isRunning) {
 //                try {
 //                    bytes = mmInStream.read(buffer);
 //                    System.arraycopy(buffer, 0, pack, packCurrentLen, bytes);
@@ -131,6 +131,7 @@ public class BtDataTransferThread extends Thread {
 
     /* Call this from the main activity to shutdown the connection */
     public void cancel() {
+        isRunning=false;
         try {
             mmSocket.close();
         } catch (IOException e) {Log.e(TAG, e.getMessage());}

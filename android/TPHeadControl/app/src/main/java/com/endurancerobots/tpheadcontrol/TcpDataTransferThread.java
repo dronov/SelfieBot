@@ -1,12 +1,12 @@
 package com.endurancerobots.tpheadcontrol;
 
 import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Socket;
 import java.util.Arrays;
 
 /**
@@ -22,14 +22,15 @@ public class TcpDataTransferThread extends Thread {
 
     private final InputStream mmInStream;
     private final OutputStream mmOutStream;
-    private final TcpProxyClient mmSocket;
+    private final Socket mmSocket;
     private Handler mOutHandler=null;
     Handler mInHandler;   // TODO: 05.08.15 сделать обратную связь
     private boolean mSendInLoop=false;
     private byte[] mBytes;
     private byte counter=0;
+    private boolean isRunning=true;
 
-    public TcpDataTransferThread(TcpProxyClient socket) throws NullPointerException {
+    public TcpDataTransferThread(Socket socket) throws NullPointerException {
         mmSocket = socket;
         InputStream tmpIn = null;
         OutputStream tmpOut = null;
@@ -71,12 +72,15 @@ public class TcpDataTransferThread extends Thread {
         int bytes; // bytes returned from read()
 
         // Keep listening to the InputStream until an exception occurs
-        while (true) {
+        while (isRunning) {
             try {
                 bytes = mmInStream.read(buffer);
                 Log.v(TAG, "read " + bytes + " bytes:" + Arrays.toString(buffer));
+
                 if(mOutHandler!=null) {
-                    mOutHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+                    byte[] msg = new byte[bytes];
+                    System.arraycopy(buffer,0,msg,0,bytes);
+                    mOutHandler.obtainMessage(MESSAGE_READ, bytes, -1, msg).sendToTarget();
                     if(buffer[0]==CLOSE_CONNECTION){
                         mOutHandler.obtainMessage(CLOSE_CONNECTION, -1, -1, buffer)
                                 .sendToTarget();
@@ -100,10 +104,7 @@ public class TcpDataTransferThread extends Thread {
 
     /* Call this from the main activity to shutdown the connection */
     public void cancel() {
-        try {
-            mmSocket.close();
-            Log.d(TAG, "thread canceled");
-        } catch (Exception e) {Log.e(TAG, e.getMessage());}
+        isRunning=false;
     }
 
     public void setOutHandler(Handler mOutHandler) {
