@@ -1,4 +1,4 @@
-package com.endurancerobots.tpheadcontrol;
+package com.endurancerobots.selfiebot;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;

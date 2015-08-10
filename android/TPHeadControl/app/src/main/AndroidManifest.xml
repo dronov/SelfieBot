@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.endurancerobots.tpheadcontrol" >
+    package="com.endurancerobots.selfiebot" >
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -23,7 +23,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".MainActivity"
+            android:name="com.endurancerobots.selfiebot.MainActivity"
             android:label="@string/app_name_launcher">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -33,7 +33,7 @@
         </activity>
 
         <service
-            android:name=".UiControlService"
+            android:name="com.endurancerobots.selfiebot.UiControlService"
             android:enabled="true"
             android:exported="true" >
             <intent-filter>
@@ -41,24 +41,24 @@
             </intent-filter>
         </service>
         <service
-            android:name=".ServoControlService"
+            android:name="com.endurancerobots.selfiebot.ServoControlService"
             android:exported="false" >
         </service>
 
         <activity
-            android:name=".AboutActivity"
+            android:name="com.endurancerobots.selfiebot.AboutActivity"
             android:label="@string/title_activity_about"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName="com.endurancerobots.selfiebot.MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.endurancerobots.tpheadcontrol.MainActivity" />
+                android:value="com.endurancerobots.selfiebot.MainActivity" />
         </activity>
         <activity
-            android:name=".DeviceChoosing"
-            android:parentActivityName=".MainActivity">
+            android:name="com.endurancerobots.selfiebot.DeviceChoosing"
+            android:parentActivityName="com.endurancerobots.selfiebot.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.endurancerobots.tpheadcontrol.MainActivity" />
+                android:value="com.endurancerobots.selfiebot.MainActivity" />
         </activity>
     </application>
 

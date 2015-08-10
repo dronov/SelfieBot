@@ -1,4 +1,4 @@
-package com.endurancerobots.tpheadcontrol;
+package com.endurancerobots.selfiebot;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

@@ -1,4 +1,4 @@
-package com.endurancerobots.tpheadcontrol.util;
+package com.endurancerobots.selfiebot.util;
 
 /**
  * Created by ilya on 07.08.15.

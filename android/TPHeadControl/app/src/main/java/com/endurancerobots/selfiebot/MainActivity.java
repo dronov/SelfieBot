@@ -1,4 +1,4 @@
-package com.endurancerobots.tpheadcontrol;
+package com.endurancerobots.selfiebot;
 
 import android.app.Activity;
 //import android.app.FragmentManager;
@@ -33,7 +33,6 @@ public class MainActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setTitle(BuildConfig.VERSION_NAME);
     }
 
     @Override
@@ -64,14 +63,6 @@ public class MainActivity extends FragmentActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private void disableBluetooth() {
-        mBluetoothEnabled=false;
-    }
-
-    private void enableBluetooth() {
-        mBluetoothEnabled=true;
     }
 
     public void makeServerOnClick(View view) {

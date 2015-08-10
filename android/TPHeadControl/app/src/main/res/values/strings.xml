@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">GIL Head</string>
-    <string name="app_name_launcher" translatable="false">GIL Head</string>
+    <string name="app_name" translatable="false">Selfiebot</string>
+    <string name="app_name_launcher" translatable="false">Selfiebot</string>
     <string name="hello_world" translatable="false">Hello world!</string>
     <string name="down">Down</string>
     <string name="enable_bluetooth_connection">Use Bluetooth</string>
@@ -26,9 +26,7 @@
     <string name="about_text">It\'s app for controling movable holder.\n To control:\n
         1. Hold your device in credle and switch on the Holder \n
         2. Push <i>Connect to Holder</i>.\n
-        3. Now your partner can start GIL head and push <i>Connect to robot</i> to control the Holder\n
-        <b>Authors:</b> Vladislav Sannikov (design), George Ter-Avakov (hardware) and Ilya Petrov (app)\n
-        <b>Company:</b> Endurance Robots <a href="http://endurancerobots.com">www.endurancerobots.com</a>
+        3. Now your partner can start GIL head and push <i>Connect to robot</i> to control the Holder
     </string>
     <string name="back">Back</string>
     <string name="bluetooth_enabled">Bluetooth enabled</string>
@@ -52,4 +50,12 @@
     <string name="unsuccessful_connection">Unsuccessful connection</string>
     <string name="bluetooth_source_is_unreachable_not_connected">Device is not connected</string>
     <string name="cant_write_to_operator">Can\'t write to operator</string>
+    <string name="email_support" translatable="false">ilya.petrov.m@gmail.com</string>
+    <string name="company_name" translatable="false">Endurance Robots</string>
+    <string name="company_site" translatable="false"><a href="http://endurancerobots.com">www.endurancerobots.com</a></string>
+    <string name="authors">Vladislav Sannikov (design)\nGeorge Ter-Avakov (hardware)\nIlya Petrov (app)</string>
+    <string name="guide">Guide</string>
+    <string name="company">Company</string>
+    <string name="support">Support</string>
+    <string name="site">Site</string>
 </resources>

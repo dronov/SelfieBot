@@ -1,4 +1,4 @@
-package com.endurancerobots.tpheadcontrol;
+package com.endurancerobots.selfiebot;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -20,9 +20,9 @@ import java.util.Arrays;
 
 public class ServoControlService extends Service {
 
-    static final String START_SERVO_CONTROL = "com.endurancerobots.tpheadcontrol.action.START_SERVO_CONTROL";
-    static final String EXTRA_HEAD_ID = "com.endurancerobots.tpheadcontrol.extra.HEAD_ID";
-    static final String EXTRA_MAC = "com.endurancerobots.tpheadcontrol.extra.MAC";
+    static final String START_SERVO_CONTROL = "com.endurancerobots.selfiebot.action.START_SERVO_CONTROL";
+    static final String EXTRA_HEAD_ID = "com.endurancerobots.selfiebot.extra.HEAD_ID";
+    static final String EXTRA_MAC = "com.endurancerobots.selfiebot.extra.MAC";
     static final String TAG = "ServoControlService";
 
     TcpDataTransferThread mTcpTransport;

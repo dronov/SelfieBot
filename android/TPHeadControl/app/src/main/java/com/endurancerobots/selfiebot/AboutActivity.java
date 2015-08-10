@@ -1,4 +1,4 @@
-package com.endurancerobots.tpheadcontrol;
+package com.endurancerobots.selfiebot;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -14,6 +14,7 @@ public class AboutActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
+        setTitle(BuildConfig.VERSION_NAME);
         TextView t2 = (TextView) findViewById(R.id.about_content);
         t2.setMovementMethod(LinkMovementMethod.getInstance());
     }

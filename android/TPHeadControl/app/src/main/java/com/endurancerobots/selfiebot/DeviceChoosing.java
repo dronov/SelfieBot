@@ -1,6 +1,6 @@
-package com.endurancerobots.tpheadcontrol;
+package com.endurancerobots.selfiebot;
 
-import com.endurancerobots.tpheadcontrol.util.SystemUiHider;
+import com.endurancerobots.selfiebot.util.SystemUiHider;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -29,8 +29,8 @@ public class DeviceChoosing extends Activity {
 
 
     private static final String TAG = "DeviceChoosing";
-    public static final String REQUEST_BLUETOOTH_DEVICE_CHOOSED = "com.endurancerobots.tpheadcontrol.REQUEST_BLUETOOTH_DEVICE_CHOOSED";
-    public static final String BLUETOOTH_MAC = "com.endurancerobots.tpheadcontrol.BLUETOOTH_MAC";
+    public static final String REQUEST_BLUETOOTH_DEVICE_CHOOSED = "com.endurancerobots.selfiebot.REQUEST_BLUETOOTH_DEVICE_CHOOSED";
+    public static final String BLUETOOTH_MAC = "com.endurancerobots.selfiebot.BLUETOOTH_MAC";
 
     private ListAdapter mBluetoothList;
     private ArrayList<String> mDeviceArray = new ArrayList<String>();

@@ -1,14 +1,10 @@
-package com.endurancerobots.tpheadcontrol;
+package com.endurancerobots.selfiebot;
 
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import com.endurancerobots.tpheadcontrol.util.ProxyConnectionStates;
-
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Arrays;

@@ -30,10 +30,7 @@
         1. Закрепите мобильное устройство в держателе и включите подставку\n
         2. Нажмите <i>Подключиться к подставке</i>.\n
         3. Нажмите <i>Подключиться к роботу</i> на мобильном устройстве,
-        с которого вы будете управлять подставкой.\n
-        \n
-        <b>Авторы проекта:</b> Владислав Санников (конструкция), Георгий Тер-Аваков (электроника) и Илья Петров (приложение)\n
-        <b>Компания:</b> Edurance Robots <a href="http://endurancerobots.com">www.endurancerobots.com</a>
+        с которого вы будете управлять подставкой.
     </string>
     <string name="about">Помощь</string>
     <string name="choosed">"Выбрано: "</string>
@@ -57,5 +54,10 @@
     <string name="unsuccessful_connection">Неудачное соединение</string>
     <string name="bluetooth_source_is_unreachable_not_connected">Устройство не подключено</string>
     <string name="cant_write_to_operator">Невозможно написать оператору</string>
+    <string name="company">Компания</string>
+    <string name="guide">Инструкция</string>
+    <string name="site">Сайт</string>
+    <string name="support">Поддержка</string>
+    <string name="authors">Владислав Санников (конструкция)\nГеоргий Тер-Аваков (электроника)\nИлья Петров (приложение)</string>
 
 </resources>

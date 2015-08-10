@@ -1,4 +1,4 @@
-package com.endurancerobots.tpheadcontrol;
+package com.endurancerobots.selfiebot;
 
 import android.os.Handler;
 import android.util.Log;
@@ -110,6 +110,7 @@ public class TcpDataTransferThread extends Thread {
     public void setOutHandler(Handler mOutHandler) {
         this.mOutHandler = mOutHandler;
     }
+
 // TODO: 05.08.15 сделать обратную связь
 //    public Handler getInHandler() {
 //        return mInHandler;

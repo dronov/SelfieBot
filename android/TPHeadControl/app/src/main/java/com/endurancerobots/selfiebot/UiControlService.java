@@ -1,11 +1,10 @@
-package com.endurancerobots.tpheadcontrol;
+package com.endurancerobots.selfiebot;
 
 
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -27,8 +26,8 @@ import java.util.Arrays;
 
 public class UiControlService extends Service {
 
-    public static final String EXTRA_HEAD_ID = "com.endurancerobots.tpheadcontrol.extra.HEAD_ID";
-    public static final String ACTION_START_CONTROLS = "com.endurancerobots.tpheadcontrol.extra.START_CONTROLS";
+    public static final String EXTRA_HEAD_ID = "com.endurancerobots.selfiebot.extra.HEAD_ID";
+    public static final String ACTION_START_CONTROLS = "com.endurancerobots.selfiebot.extra.START_CONTROLS";
 
 
     private static Handler sHandler;
