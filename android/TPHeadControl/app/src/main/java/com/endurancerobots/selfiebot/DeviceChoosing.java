@@ -34,7 +34,8 @@ public class DeviceChoosing extends Activity {
 
     private ListAdapter mBluetoothList;
     private ArrayList<String> mDeviceArray = new ArrayList<String>();
-    private ArrayAdapter<String> mStringAdapter;
+    private ArrayAdapter<String> mDevicesAdapter;
+//    private ArrayList<String> mMacAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,18 +44,18 @@ public class DeviceChoosing extends Activity {
         Log.d(TAG, "onCreate");
         ListView listView = (ListView) findViewById(R.id.bluetooth_devices);
 
-        mStringAdapter = new ArrayAdapter<String>(this,
+        mDevicesAdapter = new ArrayAdapter<String>(this,
                 R.layout.bluetooth_device_item,
                 mDeviceArray);
-        listView.setAdapter(mStringAdapter);
+        listView.setAdapter(mDevicesAdapter);
         getDevices();
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 TextView tv = (TextView) view;
-                Log.i(TAG, mStringAdapter.getItem(position));
+                Log.i(TAG, mDevicesAdapter.getItem(position));
                 Intent answerIntent = new Intent();
-                answerIntent.putExtra(BLUETOOTH_MAC, mStringAdapter.getItem(position));
+                answerIntent.putExtra(BLUETOOTH_MAC, mDevicesAdapter.getItem(position).split("\n")[1]);
                 setResult(RESULT_OK, answerIntent);
                 finish();
             }
@@ -68,8 +69,8 @@ public class DeviceChoosing extends Activity {
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
-                mDeviceArray.add(device.getAddress());
-                mStringAdapter.notifyDataSetChanged();
+                mDeviceArray.add(device.getName() + "\n" + device.getAddress());
+                mDevicesAdapter.notifyDataSetChanged();
                 Log.i(TAG, device.getName() + " " + device.getAddress());
             }
         }

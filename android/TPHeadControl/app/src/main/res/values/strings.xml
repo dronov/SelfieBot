@@ -58,4 +58,5 @@
     <string name="company">Company</string>
     <string name="support">Support</string>
     <string name="site">Site</string>
+    <string name="authors_title">Authors</string>
 </resources>

@@ -59,5 +59,6 @@
     <string name="site">Сайт</string>
     <string name="support">Поддержка</string>
     <string name="authors">Владислав Санников (конструкция)\nГеоргий Тер-Аваков (электроника)\nИлья Петров (приложение)</string>
+    <string name="authors_title">Авторы</string>
 
 </resources>

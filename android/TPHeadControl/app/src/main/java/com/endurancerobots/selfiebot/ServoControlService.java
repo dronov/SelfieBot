@@ -16,6 +16,7 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.Socket;
 import java.util.Arrays;
 
 public class ServoControlService extends Service {
@@ -35,6 +36,7 @@ public class ServoControlService extends Service {
     byte mMsgCounter =1;
     static Handler sHandler;
     String mHeadId;
+    private P2PConnector p2pConnector;
 
     public ServoControlService() {
         sHandler = new Handler(){
@@ -84,23 +86,28 @@ public class ServoControlService extends Service {
                     case TcpDataTransferThread.CONNECTION_INFO:
                         Log.v(TAG, "TCP connection info: " + (String)msg.obj);
                         break;
-                    case ProxyConnector.CONNECTED_SOCKET:
+                    case ProxyConnector.CONNECTED_SERVER_SOCKET:
                         publishProgress(getString(R.string.successful_connection));
-                        mTcpTransport = new TcpDataTransferThread(connector.getSocket());
+                        mTcpTransport = new TcpDataTransferThread((Socket)msg.obj);
+                        mTcpTransport.setName("Server");
                         mTcpTransport.start();
-                        if(mBtTransport !=null)
+                        if(mBtTransport !=null) {
                             mTcpTransport.setOutHandler(mBtTransport.getInHandler());
+                        }
                         break;
                     case BtConnectThread.BLUETOOTH_SOCKET_OPEN:
                         publishProgress(getString(R.string.holder_is_connected));
                         mBtTransport = new BtDataTransferThread((BluetoothSocket)msg.obj);
+                        mBtTransport.setName("Bluetooth client");
                         mBtTransport.start();
-                        if(mTcpTransport !=null)
+                        if(mTcpTransport !=null) {
                             mTcpTransport.setOutHandler(mBtTransport.getInHandler());
+                        }
                         break;
                     case BtConnectThread.BLUETOOTH_SOCKET_CLOSE:
                         publishProgress(getString(R.string.holder_is_not_connected));
                         break;
+
                     default:
                         Log.w(TAG,"Unknown message "+Arrays.toString((byte[])msg.obj)
                                 +"with length: "+msg.arg1);
@@ -122,6 +129,8 @@ public class ServoControlService extends Service {
             }
         }
     }
+
+
 
     private void startTcpThread(String headId, String mac){
         BluetoothAdapter bluetooth = BluetoothAdapter.getDefaultAdapter();

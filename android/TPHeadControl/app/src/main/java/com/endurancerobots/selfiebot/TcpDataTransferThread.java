@@ -14,13 +14,12 @@ import java.util.Arrays;
  */
 public class TcpDataTransferThread extends Thread {
 
-    private static final String TAG = "TcpDataTransferThread";
     public static final int MESSAGE_READ = 10;
     public static final int CONNECTION_INFO = 20;
     public static final int CLOSE_CONNECTION = 113;
     public static final int MESSAGE_WRITE = 30;
-
     private final InputStream mmInStream;
+
     private final OutputStream mmOutStream;
     private final Socket mmSocket;
     private Handler mOutHandler=null;
@@ -29,8 +28,13 @@ public class TcpDataTransferThread extends Thread {
     private byte[] mBytes;
     private byte counter=0;
     private boolean isRunning=true;
+    static int numOfThreads = 0;
+    private String TAG = "TcpDataTransferThread";
 
     public TcpDataTransferThread(Socket socket) throws NullPointerException {
+        numOfThreads++;
+        TAG = "TcpDataTransferThread"+numOfThreads;
+
         mmSocket = socket;
         InputStream tmpIn = null;
         OutputStream tmpOut = null;
@@ -67,6 +71,7 @@ public class TcpDataTransferThread extends Thread {
     }
 
     public void run() {
+        TAG+=getName();
         Log.d(TAG, "thread started");
         byte[] buffer = new byte[128];  // buffer store for the stream
         int bytes; // bytes returned from read()
@@ -75,7 +80,7 @@ public class TcpDataTransferThread extends Thread {
         while (isRunning) {
             try {
                 bytes = mmInStream.read(buffer);
-                Log.v(TAG, "read " + bytes + " bytes:" + Arrays.toString(buffer));
+                Log.v(TAG, "read " + bytes + " bytes:" + new String(buffer,0,bytes));
 
                 if(mOutHandler!=null) {
                     byte[] msg = new byte[bytes];
@@ -92,6 +97,8 @@ public class TcpDataTransferThread extends Thread {
                     mOutHandler.obtainMessage(CONNECTION_INFO, -1, -1, "Connection lost")
                             .sendToTarget();
                 }
+            } catch (StringIndexOutOfBoundsException e){
+                Log.e(TAG,e.getMessage());
             }
         }
     }
@@ -105,10 +112,15 @@ public class TcpDataTransferThread extends Thread {
     /* Call this from the main activity to shutdown the connection */
     public void cancel() {
         isRunning=false;
+        Log.i(TAG,"canceled");
     }
 
     public void setOutHandler(Handler mOutHandler) {
         this.mOutHandler = mOutHandler;
+    }
+
+    public Socket getMmSocket() {
+        return mmSocket;
     }
 
 // TODO: 05.08.15 сделать обратную связь

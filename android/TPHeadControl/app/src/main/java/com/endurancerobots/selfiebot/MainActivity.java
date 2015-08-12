@@ -135,14 +135,16 @@ public class MainActivity extends FragmentActivity {
 
     private void gettingBoundedDevices() {
         Log.i(TAG, "gettingBoundedDevices");
-        FragmentManager manager = getSupportFragmentManager();
-        DeviceChooserDialog deviceChooser = new DeviceChooserDialog();
-        deviceChooser.show(manager, "Device choosing");
-//        Intent deviceChooseIntent = new Intent(getApplicationContext(),DeviceChoosing.class);
-//        startActivityForResult(deviceChooseIntent,CHOOSE_BLUETOOTH_DEVICE);
+//        FragmentManager manager = getSupportFragmentManager();
+//        DeviceChooserDialog deviceChooser = new DeviceChooserDialog();
+//        deviceChooser.show(manager, "Device choosing");
+        Intent deviceChooseIntent = new Intent(getApplicationContext(),DeviceChoosing.class);
+        startActivityForResult(deviceChooseIntent,CHOOSE_BLUETOOTH_DEVICE);
         /** see deviceChoosed */
     }
     public void deviceChoosed(String mac) {
+        Toast.makeText(getApplicationContext(), getString(R.string.choosed) +mac,
+                Toast.LENGTH_SHORT).show();
         mMacAddr =mac;
 //        mServoControlIntent = ServoControlService.startServoControl(getApplicationContext(), getHeadId(), getMac());
         mServoControlIntent = new Intent(getApplicationContext(), ServoControlService.class);

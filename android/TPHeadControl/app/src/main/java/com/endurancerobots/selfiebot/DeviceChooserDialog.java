@@ -57,9 +57,6 @@ public class DeviceChooserDialog extends DialogFragment {
                 .setItems(devicesList, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         ((MainActivity) getActivity()).deviceChoosed(devicesList[which]);
-                        Toast.makeText(getActivity(),
-                                getString(R.string.choosed) + devicesList[which],
-                                Toast.LENGTH_SHORT).show();
                     }
                 });
 

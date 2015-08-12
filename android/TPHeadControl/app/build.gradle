@@ -7,10 +7,10 @@ android {
     buildToolsVersion "22.0.1"
     defaultConfig {
         applicationId "com.endurancerobots.selfiebot"
-        minSdkVersion 4
+        minSdkVersion 5
         targetSdkVersion 22
         versionCode 10
-        versionName "0.4.9 SelfieBot"
+        versionName "0.4.10 SelfieBot"
     }
     buildTypes {
         release {

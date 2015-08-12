@@ -3,8 +3,14 @@ package com.endurancerobots.selfiebot;
 
 import android.app.Service;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.PixelFormat;
 
+import android.media.FaceDetector;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -20,6 +26,9 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Arrays;
@@ -46,6 +55,7 @@ public class UiControlService extends Service {
     private TcpDataTransferThread tcpDataTransferThread;
 
     private static final String TAG = "UiControlService";
+    private boolean waitForIp=true;
 
 
     @Override
@@ -84,18 +94,23 @@ public class UiControlService extends Service {
                                         + msg.arg2 + " " + Arrays.toString(((byte[]) msg.obj)));
                                 setInfo(ComandDecoder.decode((byte[]) msg.obj));
                                 break;
-                            case ProxyConnector.CONNECTED_SOCKET:
+                            case ProxyConnector.CONNECTED_CLIENT_SOCKET:
                                 Log.d(TAG, "CONNECT");
                                 setInfo(getString(R.string.successful_connection));
                                 tcpDataTransferThread = new TcpDataTransferThread((Socket) msg.obj);
                                 tcpDataTransferThread.setOutHandler(sHandler);
+                                tcpDataTransferThread.setName("Client");
                                 tcpDataTransferThread.start();
+                                break;
+                            case TcpDataTransferThread.CLOSE_CONNECTION:
+                                stopSelf();
                                 break;
                             default:
                                 Log.w(TAG, "sHandler got Unknown message " + msg.arg1 + " " + msg.arg2 + " " + msg.obj);
                         }
                     }
                 };
+
                 Log.d(TAG, "onCreate");
 
                 Log.i(TAG, "UI Control got Head Id:" + mHeadId);
@@ -105,6 +120,15 @@ public class UiControlService extends Service {
             }
         }
     }
+
+    private void updateTransportSocket(Socket socket) {
+        TcpDataTransferThread newTrans = new TcpDataTransferThread(socket);
+        newTrans.setOutHandler(sHandler);
+        newTrans.start();
+        tcpDataTransferThread = newTrans;
+    }
+
+
 
     private void setupLayout() {
         /*******Setup layout**************************/
@@ -248,8 +272,64 @@ public class UiControlService extends Service {
                     fl.setVisibility(View.VISIBLE);
                     mWinMgr.updateViewLayout(mMyView, mLayoutParams);
                 }
+//                saveBitmap(takeScreenShot());
             }
         });
+    }
+    private int imageWidth, imageHeight;
+    private int numberOfFace = 5;
+    private FaceDetector myFaceDetect;
+    private FaceDetector.Face[] myFace;
+    float myEyesDistance;
+    int numberOfFaceDetected;
+    private Bitmap mBitmap;
+    private String path;
+    private int framerate=20;
+
+    private Bitmap takeScreenShot() {
+        Log.v(TAG, "take Screenshot");
+        View rootView = mMyView;
+        rootView.setDrawingCacheEnabled(true);
+        rootView.buildDrawingCache();
+        return rootView.getDrawingCache();
+    }
+
+    private Bitmap convert(Bitmap bitmap, Bitmap.Config config) {
+        Log.v(TAG,"converting bitmap");
+        Bitmap convertedBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), config);
+        Canvas canvas = new Canvas(convertedBitmap);
+        Paint paint = new Paint();
+        paint.setColor(Color.BLACK);
+        canvas.drawBitmap(bitmap, 0, 0, paint);
+        return convertedBitmap;
+    }
+
+    private FaceDetector.Face[] findFaces(Bitmap bitmap) {
+        Log.v(TAG,"finding faces");
+        imageWidth = bitmap.getWidth();
+        imageHeight = bitmap.getHeight();
+        myFace = new FaceDetector.Face[numberOfFace];
+        myFaceDetect = new FaceDetector(imageWidth, imageHeight,
+                numberOfFace);
+        numberOfFaceDetected = myFaceDetect.findFaces(bitmap, myFace);
+        Log.i("findFaces", "Number Of Face Detected = " + numberOfFaceDetected);
+        return myFace;
+    }
+    private void saveBitmap(Bitmap bitmap) {
+        path = Environment.getExternalStorageDirectory() + "/screenshot.png";
+        File imagePath = new File(path);
+        FileOutputStream fos;
+        try {
+            fos = new FileOutputStream(imagePath);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            fos.flush();
+            fos.close();
+//            Toast.makeText(getApplicationContext(), "Saved to " + path, Toast.LENGTH_SHORT).show();
+        } catch (FileNotFoundException e) {
+            Log.e("GREC", e.getMessage(), e);
+        } catch (IOException e) {
+            Log.e("GREC", e.getMessage(), e);
+        }
     }
 
     private void setInfo(String info) {
@@ -284,6 +364,9 @@ public class UiControlService extends Service {
         writeCmd(mOutMsg);
     }
     public void quit()  {
+        Toast.makeText(getApplicationContext(),
+                getString(R.string.connection_closed),
+                Toast.LENGTH_LONG).show();
         if (mMyView != null){
             if (mWinMgr != null){
                 mWinMgr.removeView(mMyView);
@@ -295,17 +378,15 @@ public class UiControlService extends Service {
         mOutMsg[2] = 'q';
         mOutMsg[3] = 'q';
         mOutMsg[4] = 'q';
-        writeCmd(mOutMsg);
+//        writeCmd(mOutMsg); // TODO: 12.08.15 closing protocol
         Log.i(TAG, "Connection closed");
-        Toast.makeText(getApplicationContext(),
-                getString(R.string.connection_closed),
-                Toast.LENGTH_LONG).show();
     }
 
     private void writeCmd(byte[] cmd) {
         try {
             tcpDataTransferThread.write(cmd);
         } catch (IOException e) {
+
             e.printStackTrace();
         }
         Log.d(TAG, "sent: " + Arrays.toString(cmd));
@@ -318,7 +399,7 @@ public class UiControlService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "Service destroyed");
-//        tcpDataTransferThread.cancel();
+        quit();
         super.onDestroy();
     }
 }
