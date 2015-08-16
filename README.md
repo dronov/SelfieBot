@@ -5,4 +5,4 @@ This project use Arduino for hardware part and application is available on Andro
 Here you can find source and release files of SelfieBot project.
 
 #Download
-You can download last version of Android-application from "release" tab  (https://github.com/deadtr/SelfieBot/releases)/ 
+You can download last version of Android-application from "release" tab  (https://github.com/deadtr/SelfieBot/releases).
