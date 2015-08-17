@@ -3,4 +3,4 @@ SelfieBot is a movable holder for your mobile devices. It allows you to control 
 This project use Arduino for hardware part and Android application.
 
 #Download
-You can download last version of SelfieBot from "release" tab  (https://github.com/deadtr/SelfieBot/releases).
+You can download last version of SelfieBot here:  (https://github.com/deadtr/SelfieBot/wiki/Install).
