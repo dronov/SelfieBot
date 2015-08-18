@@ -9,8 +9,8 @@ android {
         applicationId "com.endurancerobots.selfiebot"
         minSdkVersion 5
         targetSdkVersion 22
-        versionCode 11
-        versionName "0.5.2 SelfieBot"
+        versionCode 12
+        versionName "0.5.3 SelfieBot"
     }
     buildTypes {
         release {
