@@ -15,25 +15,27 @@ import java.util.Arrays;
 public class TcpDataTransferThread extends Thread {
 
     public static final int MESSAGE_READ = 10;
+
     public static final int CONNECTION_INFO = 20;
+
     public static final int CLOSE_CONNECTION = 113;
     public static final int MESSAGE_WRITE = 30;
-    private final InputStream mmInStream;
+    public static final int BY_CLIENT = 1007;
+    public static final int BY_ERROR = 999;
 
+    private final InputStream mmInStream;
     private final OutputStream mmOutStream;
     private final Socket mmSocket;
-    private Handler mOutHandler=null;
+
+    private Handler mData = null;
+    private Handler mControl = null;
     Handler mInHandler;   // TODO: 05.08.15 сделать обратную связь
-    private boolean mSendInLoop=false;
-    private byte[] mBytes;
-    private byte counter=0;
-    private boolean isRunning=true;
     static int numOfThreads = 0;
     private String TAG = "TcpDataTransferThread";
 
     public TcpDataTransferThread(Socket socket) throws NullPointerException {
         numOfThreads++;
-        TAG = "TcpDataTransferThread"+numOfThreads;
+        TAG = "TcpTransfer_"+numOfThreads;
 
         mmSocket = socket;
         InputStream tmpIn = null;
@@ -71,57 +73,77 @@ public class TcpDataTransferThread extends Thread {
     }
 
     public void run() {
-        TAG+=getName();
+        TAG+="_"+getName();
         Log.d(TAG, "thread started");
         byte[] buffer = new byte[128];  // buffer store for the stream
         int bytes; // bytes returned from read()
 
         // Keep listening to the InputStream until an exception occurs
-        while (isRunning) {
+        while (!isInterrupted()) {
             try {
                 bytes = mmInStream.read(buffer);
-                Log.v(TAG, "read " + bytes + " bytes:" + new String(buffer,0,bytes));
+                Log.v(TAG, "read " + bytes + " bytes:" + new String(buffer, 0, bytes));
 
-                if(mOutHandler!=null) {
+                if(buffer[0]==113){
+                    if (mControl != null) {
+                        mControl.obtainMessage(CLOSE_CONNECTION, BY_CLIENT,0).sendToTarget();
+                        Log.i(TAG, "Client wants to close connection. I'll send msg to service");
+                        interrupt();
+                    }else Log.w(TAG,"Oops, mControl handler is null");
+                }
+                if(mData != null) {
                     byte[] msg = new byte[bytes];
                     System.arraycopy(buffer,0,msg,0,bytes);
-                    mOutHandler.obtainMessage(MESSAGE_READ, bytes, -1, msg).sendToTarget();
-                    if(buffer[0]==CLOSE_CONNECTION){
-                        mOutHandler.obtainMessage(CLOSE_CONNECTION, -1, -1, buffer)
-                                .sendToTarget();
-                    }
+                    mData.obtainMessage(MESSAGE_READ, bytes, -1, msg).sendToTarget();
                 }
             } catch (IOException e) {
                 Log.e(TAG,e.getMessage());
-                if(mOutHandler!=null) {
-                    mOutHandler.obtainMessage(CONNECTION_INFO, -1, -1, "Connection lost")
-                            .sendToTarget();
+                if (mControl != null) {
+                    mControl.obtainMessage(CLOSE_CONNECTION,BY_ERROR,0).sendToTarget();
                 }
+                interrupt();
             } catch (StringIndexOutOfBoundsException e){
-                Log.e(TAG,e.getMessage());
+                Log.w(TAG,"String index error:"+ e.getMessage());
+                if (mControl != null) {
+                    mControl.obtainMessage(CLOSE_CONNECTION,BY_ERROR,0).sendToTarget();
+                }
+                interrupt();
             }
+        }
+        try {
+            mmInStream.close();
+            mmOutStream.close();
+            Log.i(TAG,"Streams closed");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
     /* Call this from the main activity to send data to the remote device */
-    public void write(byte[] bytes) throws IOException {
-        mmOutStream.write(bytes);
-        Log.d(TAG, "write "+bytes.length+" bytes:"+Arrays.toString(bytes));
+    public void write(byte[] buf) throws IOException {
+        if(!isInterrupted()) {
+            mmOutStream.write(buf);
+            Log.v(TAG, "write " + buf.length + " bytes:" + new String(buf));
+        }
+    }
+
+    @Override
+    public void interrupt() {
+        super.interrupt();
+        Log.i(TAG, "interrupt()");
     }
 
     /* Call this from the main activity to shutdown the connection */
     public void cancel() {
-        isRunning=false;
-//        try {
-//            mmSocket.close();
-//        } catch (IOException e) {
-//            Log.w(TAG,e.getMessage());
-//        }
-        Log.i(TAG,"canceled");
+        interrupt();
     }
 
-    public void setOutHandler(Handler mOutHandler) {
-        this.mOutHandler = mOutHandler;
+    public void setOutControlHandler(Handler mOutControlHandler) {
+        this.mControl = mOutControlHandler;
+    }
+
+    public void setOutDataHandler(Handler mOutHandler) {
+        this.mData = mOutHandler;
     }
 
     public Socket getMmSocket() {

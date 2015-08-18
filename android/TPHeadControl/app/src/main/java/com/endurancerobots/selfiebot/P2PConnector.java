@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
  * Created by ilya on 12.08.15.
  */
 public class P2PConnector extends Thread {
-    // TODO: 12.08.15 Direct connection
     public static final int SERVER_PORT = 6336;
     private static final String TAG = "P2PConnector";
     public static final int UPDATE_SOCKET = 1333;
@@ -51,7 +50,6 @@ public class P2PConnector extends Thread {
     }
 
     private void sendServerAddr(String ip, int port) {
-        // TODO: 12.08.15 отправить ip-адрес и порт сервера клиенту, используя TcpTransferThread
         Log.d(TAG, "sendServerAddr:" + ip + ":" + port);
         try {
             mTransferThread.write((IP_TAG+ip+"\n\r").getBytes());
@@ -61,7 +59,6 @@ public class P2PConnector extends Thread {
     }
 
     private void updateTransportSocket(Socket socket4transport){
-        // TODO: 12.08.15 Отправить в сообщении сокет, предоставляющий связь с клиентом напрямую
         Log.d(TAG, "updateTransportSocket:" + socket4transport.toString());
         mOutHandler.obtainMessage(UPDATE_SOCKET, -1, 0, socket4transport).sendToTarget();
     }
@@ -94,5 +91,6 @@ public class P2PConnector extends Thread {
 
     public void cancel() {
         mTransferThread.cancel();
+        interrupt();
     }
 }

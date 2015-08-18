@@ -42,7 +42,8 @@
         </service>
         <service
             android:name="com.endurancerobots.selfiebot.ServoControlService"
-            android:exported="false" >
+            android:exported="true"
+            android:enabled="true">
         </service>
 
         <activity

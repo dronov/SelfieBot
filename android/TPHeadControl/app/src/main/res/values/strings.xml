@@ -69,4 +69,7 @@
     <string name="downloadLastRelease">
         <a href="https://github.com/deadtr/SelfieBot/wiki/Install">Download last release</a>
     </string>
+    <string name="connection_closed_by_client">Connection closed by client</string>
+    <string name="connection_closed_by_error">Error occures. Connection closed</string>
+    <string name="wait_for_another_connection">Waiting for another connection</string>
 </resources>

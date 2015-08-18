@@ -176,7 +176,7 @@ public class MainActivity extends FragmentActivity {
                         makeServerButton.setClickable(true);
                         makeServerButton.setTextColor(Color.BLACK);
 
-                        finish();
+//                        finish();
                         Log.i(TAG, "CLIENT_CONNECTED");
                         break;
                 }

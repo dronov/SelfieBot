@@ -88,7 +88,7 @@ public class BtConnectThread extends Thread {
 
     /** Will cancel an in-progress connection, and close the socket */
     public void cancel() {
-        isRunning=false;
+        interrupt();
         Log.d(TAG,"thread canceled");
     }
 }

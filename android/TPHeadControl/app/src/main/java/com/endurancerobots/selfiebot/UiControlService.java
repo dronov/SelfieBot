@@ -15,7 +15,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.os.Parcelable;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -50,7 +49,7 @@ public class UiControlService extends Service {
     private WindowManager.LayoutParams mPausedLayoutParams;
     private WindowManager mWinMgr;
     private View mMyView;
-    private ProxyConnector connector;
+    private ProxyConnector mConnector;
     private byte mOutMsg[] = new byte[5];
     private float mXDelta;
 
@@ -87,17 +86,18 @@ public class UiControlService extends Service {
                         super.handleMessage(msg);
                         switch (msg.what) {
                             case TcpDataTransferThread.MESSAGE_READ:
-                                Log.i(TAG, "sHandler got message: " + msg.arg1 + " "
+                                Log.i(TAG, "sDataHandler got message: " + msg.arg1 + " "
                                         + msg.arg2 + " " + Arrays.toString(((byte[]) msg.obj)));
                                 setInfo(ComandDecoder.decode((byte[]) msg.obj));
                                 break;
                             case ProxyConnector.CONNECTED_CLIENT_SOCKET:
+                                mConnector.cancel();
                                 Log.d(TAG, "CONNECT");
                                 setupLayout();
                                 setupClicks();
                                 setInfo(getString(R.string.successful_connection));
                                 tcpDataTransferThread = new TcpDataTransferThread((Socket) msg.obj);
-                                tcpDataTransferThread.setOutHandler(sHandler);
+                                tcpDataTransferThread.setOutDataHandler(sHandler);
                                 tcpDataTransferThread.setName("Client");
                                 tcpDataTransferThread.start();
 
@@ -109,7 +109,7 @@ public class UiControlService extends Service {
                                 stopSelf();
                                 break;
                             default:
-                                Log.w(TAG, "sHandler got Unknown message " + msg.arg1 + " " + msg.arg2 + " " + msg.obj);
+                                Log.w(TAG, "sDataHandler got Unknown message " + msg.arg1 + " " + msg.arg2 + " " + msg.obj);
                         }
                     }
                 };
@@ -124,8 +124,8 @@ public class UiControlService extends Service {
                 } catch (PendingIntent.CanceledException e) {
                     e.printStackTrace();
                 }
-                connector = new ProxyConnector(sHandler); // Пытаемся подключиться
-                connector.startAsClient(mHeadId);
+                mConnector = new ProxyConnector(sHandler); // Пытаемся подключиться
+                mConnector.startAsClient(mHeadId);
 
             }
         }
@@ -134,7 +134,7 @@ public class UiControlService extends Service {
 
     private void updateTransportSocket(Socket socket) {
         TcpDataTransferThread newTrans = new TcpDataTransferThread(socket);
-        newTrans.setOutHandler(sHandler);
+        newTrans.setOutDataHandler(sHandler);
         newTrans.start();
         tcpDataTransferThread = newTrans;
     }
@@ -389,23 +389,25 @@ public class UiControlService extends Service {
 
     @Override
     public void onDestroy() {
+        mOutMsg[0] = 'q';
+        mOutMsg[1] = 'q';
+        mOutMsg[2] = 'q';
+        mOutMsg[3] = 'q';
+        mOutMsg[4] = 'q';
+        writeCmd(mOutMsg);
+
         Toast.makeText(getApplicationContext(),
                 getString(R.string.connection_closed),
                 Toast.LENGTH_LONG).show();
+
         if (mMyView != null){
             if (mWinMgr != null){
                 mWinMgr.removeView(mMyView);
                 mMyView = null;
             }
         }
-        mOutMsg[0] = 'q';
-        mOutMsg[1] = 'q';
-        mOutMsg[2] = 'q';
-        mOutMsg[3] = 'q';
-        mOutMsg[4] = 'q';
-//        writeCmd(mOutMsg); // TODO: 12.08.15 closing protocol
         Log.i(TAG, "Connection closed");
-        if(connector!=null)connector.cancel();
+        if(mConnector !=null) mConnector.cancel();
         if(tcpDataTransferThread!=null)tcpDataTransferThread.cancel();
         super.onDestroy();
     }

@@ -142,7 +142,7 @@ public class BtDataTransferThread extends Thread {
         return mInHandler;
     }
 
-//    public void setOutHandler(Handler mOutHandler) {
+//    public void setOutDataHandler(Handler mOutHandler) {
 //        this.mOutHandler = mOutHandler;
 //    }
 }

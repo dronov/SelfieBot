@@ -25,20 +25,26 @@ public class ProxyConnector extends Thread {
     public static final String NOT_RESPONSED = "NOT_RESP";
     public static final String NOT_CONNECTED = "NOT_CONNECTED";
     public static final int CONNECTED_CLIENT_SOCKET = 111;
+    public static final int NOT_CONNECTED_CLIENT_SOCKET = -111;
     public static final int CONNECTED_SERVER_SOCKET = 222;
+    public static final int NOT_CONNECTED_SERVER_SOCKET = -222;
 
     private String mHeadId="";
     Handler mInHandler;
     Handler mOutHandler;
 
 
-    private byte mInputBuf[] = new byte[50];
-    private String mStrId=null;
-
-    Boolean isConnected = false;
     private P2PConnector mP2pConnector;
+
     private TcpDataTransferThread mTransferThread;
     private Socket mSocket = new Socket();
+    private boolean isP2pEnabled=false;
+
+    Boolean isConnected = false;
+
+    private Role mRole;
+    private String mStrId=null;
+    private enum Role {SERVER,CLIENT};
 
     public ProxyConnector(Handler outHandler) {
         mOutHandler = outHandler;
@@ -52,7 +58,18 @@ public class ProxyConnector extends Thread {
                         if (s.contains(CONNECT)) {
                             Log.i(TAG, CONNECT);
                             isConnected = true;
-                            if(mStrId.contains("S"))startP2PConnection(); // TODO: 12.08.15 подключение только для сервера
+                            if(isP2pEnabled) {
+                                if (mRole == Role.SERVER) {
+                                    startP2PConnection(); // TODO: 12.08.15 подключение только для сервера
+                                }
+                            }else {
+                                if(mRole==Role.SERVER) {
+                                    sendSocket(CONNECTED_SERVER_SOCKET,getSocket());
+                                }else if(mRole==Role.CLIENT){
+                                    sendSocket(CONNECTED_CLIENT_SOCKET,getSocket());
+                                }
+                                cancel();
+                            }
                         } else if (s.contains(WAIT)) {
                             Log.v(TAG, WAIT);
                         } else if (s.contains(ERROR)) {
@@ -68,33 +85,31 @@ public class ProxyConnector extends Thread {
                         break;
                     case P2PConnector.UPDATE_SOCKET:
                         Log.i(TAG, "UPDATE_SOCKET");
-                        mTransferThread.cancel();
-                        if (mOutHandler != null) {
-                            mOutHandler.obtainMessage(CONNECTED_SERVER_SOCKET, 0,0, msg.obj)
-                                    .sendToTarget();
-                            Log.i(TAG, "obtainMessage with new Socket");
-                        }else Log.w(TAG, "mOutHandler is null");
+                        sendSocket(CONNECTED_SERVER_SOCKET, (Socket) msg.obj);
+                        cancel();
+                        break;
                     case P2PConnector.DO_NOT_UPDATE_SOCKET:
                         Log.i(TAG, "DO_NOT_UPDATE_SOCKET");
-                        mTransferThread.cancel();
-                        if (mOutHandler != null) {
-                            mOutHandler.obtainMessage(CONNECTED_SERVER_SOCKET, 0,0,getSocket())
-                                    .sendToTarget();
-                            Log.i(TAG, "obtainMessage with OLD Socket");
-                        }else Log.w(TAG, "mOutHandler is null");
-
+                        sendSocket(CONNECTED_SERVER_SOCKET, getSocket());
+                        cancel();
                         break;
                 }
             }
         };
     }
 
+    private void sendSocket(int what, Socket socket) {
+        if (mOutHandler != null) mOutHandler.obtainMessage(what, socket).sendToTarget();
+        else Log.w(TAG, "mOutHandler is null");
+    }
+
     public void cancel() {
         try {
             mP2pConnector.cancel();
             mTransferThread.cancel();
+            interrupt();
         } catch (NullPointerException e){
-            Log.w(TAG,"null pointer exception");
+            Log.e(TAG,"Null pointer ex");
         }
     }
 
@@ -113,11 +128,9 @@ public class ProxyConnector extends Thread {
         @Override
         protected void onPostExecute(Socket socket) {
             super.onPostExecute(socket);
-            if (socket != null && mOutHandler != null) {
-                mOutHandler.obtainMessage(CONNECTED_CLIENT_SOCKET, socket)
-                        .sendToTarget();
-                Log.i(TAG, "Transport Socket updated");
-            } else Log.i(TAG, "Unable to update Transport Socket");
+            if (socket != null) {
+                sendSocket(CONNECTED_CLIENT_SOCKET, socket);
+            }
         }
     }
     private void startP2PConnection() {
@@ -126,10 +139,12 @@ public class ProxyConnector extends Thread {
     }
     public void startAsServer(String headId){
         mStrId = "S" + headId + "\r";
+        mRole=Role.SERVER;
         this.start();
     }
     public void startAsClient(String headId){
         mStrId = "G" + headId + "\r";
+        mRole=Role.CLIENT;
         this.start();
     }
 
@@ -168,7 +183,7 @@ public class ProxyConnector extends Thread {
             if (mSocket.isConnected()) {
                 Log.i(TAG, "Successful connection to " + host + ":" + port);
                 mTransferThread = new TcpDataTransferThread(mSocket);
-                mTransferThread.setOutHandler(mInHandler);
+                mTransferThread.setOutDataHandler(mInHandler);
                 mTransferThread.start();
                 try {
                     mTransferThread.write(mStrId.getBytes());
