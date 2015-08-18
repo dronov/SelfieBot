@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.Parcelable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
@@ -37,6 +38,7 @@ public class ServoControlService extends Service {
     static Handler sHandler;
     String mHeadId;
     private P2PConnector p2pConnector;
+    private PendingIntent pendingIntent;
 
     public ServoControlService() {
         sHandler = new Handler(){
@@ -94,6 +96,11 @@ public class ServoControlService extends Service {
                         if(mBtTransport !=null) {
                             mTcpTransport.setOutHandler(mBtTransport.getInHandler());
                         }
+                        try {
+                            pendingIntent.send(MainActivity.SERVER_CONNECTED);
+                        } catch (PendingIntent.CanceledException e) {
+                            e.printStackTrace();
+                        }
                         break;
                     case BtConnectThread.BLUETOOTH_SOCKET_OPEN:
                         publishProgress(getString(R.string.holder_is_connected));
@@ -125,6 +132,7 @@ public class ServoControlService extends Service {
             if (START_SERVO_CONTROL.equals(action)) {
                 mHeadId = intent.getStringExtra(EXTRA_HEAD_ID);
                 mMacAddr = intent.getStringExtra(EXTRA_MAC);
+                pendingIntent = intent.getParcelableExtra(MainActivity.EXTRA_SERVER_PINTENT);
                 startTcpThread(mHeadId, mMacAddr);
             }
         }
@@ -140,6 +148,8 @@ public class ServoControlService extends Service {
 
         connector = new ProxyConnector(sHandler);
         connector.startAsServer(headId);
+        try {pendingIntent.send(MainActivity.SERVER_START_CONNECTION);}
+        catch (PendingIntent.CanceledException e) {e.printStackTrace();}
     }
 
     private void writeToOperator(byte[] bytes){

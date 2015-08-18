@@ -60,5 +60,9 @@
     <string name="support">Поддержка</string>
     <string name="authors">Владислав Санников (конструкция)\nГеоргий Тер-Аваков (электроника)\nИлья Петров (приложение)</string>
     <string name="authors_title">Авторы</string>
+    <string name="change_camera">Поменять камеру</string>
+    <string name="no_face_detect">Устройство не поддерживает распознавание лиц</string>
+    <string name="downloadLastRelease"><a href="https://github.com/deadtr/SelfieBot/wiki/Install">Скачать последнюю версию</a></string>
+    <string name="updateApp">Обновить приложение</string>
 
 </resources>

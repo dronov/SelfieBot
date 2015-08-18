@@ -112,6 +112,11 @@ public class TcpDataTransferThread extends Thread {
     /* Call this from the main activity to shutdown the connection */
     public void cancel() {
         isRunning=false;
+//        try {
+//            mmSocket.close();
+//        } catch (IOException e) {
+//            Log.w(TAG,e.getMessage());
+//        }
         Log.i(TAG,"canceled");
     }
 

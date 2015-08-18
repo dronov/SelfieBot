@@ -15,8 +15,12 @@ public class AboutActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
         setTitle(BuildConfig.VERSION_NAME);
-        TextView t2 = (TextView) findViewById(R.id.about_content);
+        TextView t2 = (TextView) findViewById(R.id.support_mail);
+        TextView t3 = (TextView) findViewById(R.id.company_site);
+        TextView t4 = (TextView) findViewById(R.id.download_last_release);
         t2.setMovementMethod(LinkMovementMethod.getInstance());
+        t3.setMovementMethod(LinkMovementMethod.getInstance());
+        t4.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
     @Override

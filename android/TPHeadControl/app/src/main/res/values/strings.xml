@@ -50,13 +50,23 @@
     <string name="unsuccessful_connection">Unsuccessful connection</string>
     <string name="bluetooth_source_is_unreachable_not_connected">Device is not connected</string>
     <string name="cant_write_to_operator">Can\'t write to operator</string>
-    <string name="email_support" translatable="false">ilya.petrov.m@gmail.com</string>
+    <string name="email_support" translatable="false">
+        <a href="mailto:ilya.petrov.m@gmail.com?subject=SelfieBot%20feedback">ilya.petrov.m@gmail.com</a>
+    </string>
     <string name="company_name" translatable="false">Endurance Robots</string>
-    <string name="company_site" translatable="false"><a href="http://endurancerobots.com">www.endurancerobots.com</a></string>
-    <string name="authors">Vladislav Sannikov (design)\nGeorge Ter-Avakov (hardware)\nIlya Petrov (app)</string>
+    <string name="company_site" translatable="false">
+        <a href="http://endurancerobots.com">EnduranceRobots.com</a></string>
+    <string name="authors">Vladislav Sannikov (design)\n
+        George Ter-Avakov (hardware)\nIlya Petrov (app)</string>
     <string name="guide">Guide</string>
     <string name="company">Company</string>
     <string name="support">Support</string>
     <string name="site">Site</string>
     <string name="authors_title">Authors</string>
+    <string name="change_camera">Change camera</string>
+    <string name="no_face_detect">Device don\'t support face detection</string>
+    <string name="updateApp">Update application</string>
+    <string name="downloadLastRelease">
+        <a href="https://github.com/deadtr/SelfieBot/wiki/Install">Download last release</a>
+    </string>
 </resources>

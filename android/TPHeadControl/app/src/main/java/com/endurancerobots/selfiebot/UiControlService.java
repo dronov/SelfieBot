@@ -1,6 +1,7 @@
 package com.endurancerobots.selfiebot;
 
 
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -14,6 +15,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -35,9 +37,12 @@ import java.util.Arrays;
 
 public class UiControlService extends Service {
 
-    public static final String EXTRA_HEAD_ID = "com.endurancerobots.selfiebot.extra.HEAD_ID";
-    public static final String ACTION_START_CONTROLS = "com.endurancerobots.selfiebot.extra.START_CONTROLS";
-
+    public static final String EXTRA_HEAD_ID
+            = "com.endurancerobots.selfiebot.extra.HEAD_ID";
+    public static final String ACTION_START_CONTROLS
+            = "com.endurancerobots.selfiebot.extra.START_CONTROLS";
+    public static final String EXTRA_PENDING_INTENT
+            = "com.endurancerobots.selfiebot.extra.PENDING_INTENT";
 
     private static Handler sHandler;
 
@@ -56,33 +61,25 @@ public class UiControlService extends Service {
 
     private static final String TAG = "UiControlService";
     private boolean waitForIp=true;
+    private PendingIntent pendingIntent;
 
 
     @Override
     public void onCreate() {
         super.onCreate();
-        setupLayout();
-        setupClicks();
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public void onStart(Intent intent, int startId) {
-        super.onStart(intent, startId);
+    public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "onStart");
         if (intent != null) {
             String action = intent.getAction();
             if ((ACTION_START_CONTROLS).equals(action)) {
-//                Thread keysThread = new Thread(){
-//                    @Override
-//                    public void run() {
-//
-//                    }
-//                };
-//                keysThread.start();
 
                 mHeadId = intent.getStringExtra(EXTRA_HEAD_ID);
-                Log.i(TAG, "mHeadId :" + mHeadId);
+                pendingIntent = intent.getParcelableExtra(EXTRA_PENDING_INTENT);
+
+                Log.i(TAG, "mHeadId:" + mHeadId + " pendingIntent:" + pendingIntent.toString());
 
                 sHandler = new Handler() {
                     @Override
@@ -96,11 +93,17 @@ public class UiControlService extends Service {
                                 break;
                             case ProxyConnector.CONNECTED_CLIENT_SOCKET:
                                 Log.d(TAG, "CONNECT");
+                                setupLayout();
+                                setupClicks();
                                 setInfo(getString(R.string.successful_connection));
                                 tcpDataTransferThread = new TcpDataTransferThread((Socket) msg.obj);
                                 tcpDataTransferThread.setOutHandler(sHandler);
                                 tcpDataTransferThread.setName("Client");
                                 tcpDataTransferThread.start();
+
+                                try {pendingIntent.send(MainActivity.CLIENT_CONNECTED);}
+                                catch (PendingIntent.CanceledException e) {e.printStackTrace();}
+
                                 break;
                             case TcpDataTransferThread.CLOSE_CONNECTION:
                                 stopSelf();
@@ -115,10 +118,18 @@ public class UiControlService extends Service {
 
                 Log.i(TAG, "UI Control got Head Id:" + mHeadId);
 
+                try {
+                    pendingIntent.send(MainActivity.CLIENT_START_CONNECTION);
+                    Log.i(TAG,"send pending intent");
+                } catch (PendingIntent.CanceledException e) {
+                    e.printStackTrace();
+                }
                 connector = new ProxyConnector(sHandler); // Пытаемся подключиться
                 connector.startAsClient(mHeadId);
+
             }
         }
+        return super.onStartCommand(intent, flags, startId);
     }
 
     private void updateTransportSocket(Socket socket) {
@@ -256,7 +267,6 @@ public class UiControlService extends Service {
             @Override
             public void onClick(View view) {
 //                setInfo("Closing...");
-                quit();
                 stopSelf();
             }
         });
@@ -363,25 +373,6 @@ public class UiControlService extends Service {
         Arrays.fill(mOutMsg, (byte) 115);
         writeCmd(mOutMsg);
     }
-    public void quit()  {
-        Toast.makeText(getApplicationContext(),
-                getString(R.string.connection_closed),
-                Toast.LENGTH_LONG).show();
-        if (mMyView != null){
-            if (mWinMgr != null){
-                mWinMgr.removeView(mMyView);
-                mMyView = null;
-            }
-        }
-        mOutMsg[0] = 'q';
-        mOutMsg[1] = 'q';
-        mOutMsg[2] = 'q';
-        mOutMsg[3] = 'q';
-        mOutMsg[4] = 'q';
-//        writeCmd(mOutMsg); // TODO: 12.08.15 closing protocol
-        Log.i(TAG, "Connection closed");
-    }
-
     private void writeCmd(byte[] cmd) {
         try {
             tcpDataTransferThread.write(cmd);
@@ -398,8 +389,24 @@ public class UiControlService extends Service {
 
     @Override
     public void onDestroy() {
-        Log.d(TAG, "Service destroyed");
-        quit();
+        Toast.makeText(getApplicationContext(),
+                getString(R.string.connection_closed),
+                Toast.LENGTH_LONG).show();
+        if (mMyView != null){
+            if (mWinMgr != null){
+                mWinMgr.removeView(mMyView);
+                mMyView = null;
+            }
+        }
+        mOutMsg[0] = 'q';
+        mOutMsg[1] = 'q';
+        mOutMsg[2] = 'q';
+        mOutMsg[3] = 'q';
+        mOutMsg[4] = 'q';
+//        writeCmd(mOutMsg); // TODO: 12.08.15 closing protocol
+        Log.i(TAG, "Connection closed");
+        if(connector!=null)connector.cancel();
+        if(tcpDataTransferThread!=null)tcpDataTransferThread.cancel();
         super.onDestroy();
     }
 }

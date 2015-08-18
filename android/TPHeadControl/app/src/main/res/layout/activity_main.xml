@@ -6,13 +6,17 @@
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity"
     android:background="@color/white">
 
+
+
     <ImageView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:id="@+id/imageView"
         android:src="@drawable/edur_short_logo"
         android:layout_above="@+id/linearLayout"
-        android:background="#ffffffff" />
+        android:background="#00ffffff" />
+
+
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -38,27 +42,6 @@
                 android:textSize="@dimen/bigFont"
                 android:layout_alignParentTop="true"
                 android:layout_centerHorizontal="true" />
-            <!--<LinearLayout-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:orientation="horizontal"-->
-                <!--android:layout_below="@+id/headId"-->
-                <!--android:layout_centerHorizontal="true">-->
-                <!--<ImageButton-->
-                    <!--android:layout_width="@dimen/square_mid_buttons"-->
-                    <!--android:layout_height="@dimen/square_mid_buttons"-->
-                    <!--android:text="@string/connect2Robot"-->
-                    <!--android:onClick="connect2RobotOnClick"-->
-                    <!--android:id="@+id/connect2Robot"-->
-                    <!--android:background="@drawable/phone_and_arrow" />-->
-                <!--<ImageButton-->
-                    <!--android:layout_width="@dimen/square_mid_buttons"-->
-                    <!--android:layout_height="@dimen/square_mid_buttons"-->
-                    <!--android:text="@string/makeServer"-->
-                    <!--android:onClick="makeServerOnClick"-->
-                    <!--android:id="@+id/makeServer"-->
-                    <!--android:background="@drawable/phone_and_arduino" />-->
-            <!--</LinearLayout>-->
         </RelativeLayout>
         <Button
             android:layout_width="fill_parent"
@@ -75,4 +58,19 @@
             android:id="@+id/makeServer"
             />
     </LinearLayout>
+
+    <ProgressBar
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/progressBar"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:background="#bbffffff"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentTop="true"
+        android:visibility="invisible" />
+
 </RelativeLayout>

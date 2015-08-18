@@ -36,9 +36,9 @@ public class ProxyConnector extends Thread {
     private String mStrId=null;
 
     Boolean isConnected = false;
-    private P2PConnector p2pConnector;
-    private TcpDataTransferThread transferThread;
-    private Socket socket = new Socket();
+    private P2PConnector mP2pConnector;
+    private TcpDataTransferThread mTransferThread;
+    private Socket mSocket = new Socket();
 
     public ProxyConnector(Handler outHandler) {
         mOutHandler = outHandler;
@@ -60,7 +60,7 @@ public class ProxyConnector extends Thread {
                         } else if (s.contains(P2PConnector.IP_TAG)) {
                             String addr = P2PConnector.parseAddress(s);
                             if (addr != null) {
-                                transferThread.cancel();
+                                mTransferThread.cancel();
                                 ConnectorTask p2pConnector = new ConnectorTask();
                                 p2pConnector.execute(addr);
                             }
@@ -68,7 +68,7 @@ public class ProxyConnector extends Thread {
                         break;
                     case P2PConnector.UPDATE_SOCKET:
                         Log.i(TAG, "UPDATE_SOCKET");
-                        transferThread.cancel();
+                        mTransferThread.cancel();
                         if (mOutHandler != null) {
                             mOutHandler.obtainMessage(CONNECTED_SERVER_SOCKET, 0,0, msg.obj)
                                     .sendToTarget();
@@ -76,7 +76,7 @@ public class ProxyConnector extends Thread {
                         }else Log.w(TAG, "mOutHandler is null");
                     case P2PConnector.DO_NOT_UPDATE_SOCKET:
                         Log.i(TAG, "DO_NOT_UPDATE_SOCKET");
-                        transferThread.cancel();
+                        mTransferThread.cancel();
                         if (mOutHandler != null) {
                             mOutHandler.obtainMessage(CONNECTED_SERVER_SOCKET, 0,0,getSocket())
                                     .sendToTarget();
@@ -88,6 +88,16 @@ public class ProxyConnector extends Thread {
             }
         };
     }
+
+    public void cancel() {
+        try {
+            mP2pConnector.cancel();
+            mTransferThread.cancel();
+        } catch (NullPointerException e){
+            Log.w(TAG,"null pointer exception");
+        }
+    }
+
     class ConnectorTask extends AsyncTask<String,Void,Socket>{
         @Override
         protected Socket doInBackground(String... address) {
@@ -111,8 +121,8 @@ public class ProxyConnector extends Thread {
         }
     }
     private void startP2PConnection() {
-        p2pConnector = new P2PConnector(mInHandler,transferThread);
-        p2pConnector.start();
+        mP2pConnector = new P2PConnector(mInHandler, mTransferThread);
+        mP2pConnector.start();
     }
     public void startAsServer(String headId){
         mStrId = "S" + headId + "\r";
@@ -137,7 +147,7 @@ public class ProxyConnector extends Thread {
     }
 
     public Socket getSocket() {
-        if(isConnected) return socket;
+        if(isConnected) return mSocket;
         else return null;
     }
     /**
@@ -146,23 +156,22 @@ public class ProxyConnector extends Thread {
      * @return true - with successful connection, else return "false"
      */
     public void connect(String host, int port) {
-        if (socket.isConnected()) {
+        if (mSocket.isConnected()) {
             Log.w(TAG, "Already connected to " + host + ":" + port);
         }
         else {
             try {
-//                TODO сделать подключение в отдельном потоке (v6)
-                socket.connect(new InetSocketAddress(host, port));
+                mSocket.connect(new InetSocketAddress(host, port));
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if (socket.isConnected()) {
+            if (mSocket.isConnected()) {
                 Log.i(TAG, "Successful connection to " + host + ":" + port);
-                transferThread = new TcpDataTransferThread(socket);
-                transferThread.setOutHandler(mInHandler);
-                transferThread.start();
+                mTransferThread = new TcpDataTransferThread(mSocket);
+                mTransferThread.setOutHandler(mInHandler);
+                mTransferThread.start();
                 try {
-                    transferThread.write(mStrId.getBytes());
+                    mTransferThread.write(mStrId.getBytes());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

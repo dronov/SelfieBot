@@ -91,4 +91,8 @@ public class P2PConnector extends Thread {
         return inMsg.split("\n\r")[1];
 
     }
+
+    public void cancel() {
+        mTransferThread.cancel();
+    }
 }
