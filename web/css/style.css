@@ -1,0 +1,24 @@
+div {
+  background-color:#eee;
+  margin: 1em auto;
+  max-width: 190px;
+  padding: 1em;
+  text-align:center;
+}
+#connect{
+  font-size:150%;
+}
+input{
+  font-size:25pt;
+  max-width:141pt;
+  display:block;
+  font-family: sans;
+  text-align: center;
+}
+button{
+  min-width:50px;
+  min-height:50px;
+  margin:5px;
+  font-size:230%;
+  display:inline-block;
+}
