@@ -4,33 +4,65 @@
     <meta charset="UTF-8">
     <title>Selfiebot controls</title>
     <link rel="stylesheet" href="css/style.css">
+    <script type="text/javascript"
+            src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script type="text/javascript">
+      var req;
+    
+      if (window.XMLHttpRequest) req = new XMLHttpRequest(); 
+      else if (window.ActiveXObject) {
+	  try {
+	      req = new ActiveXObject('Msxml2.XMLHTTP');
+	  } catch (e){
+	  alert("exeption!");
+	  }
+	  try {
+	  req = new ActiveXObject('Microsoft.XMLHTTP');
+	  } catch (e){
+	  alert("exeption!");
+	  }
+      }
+
+      if (req) {
+	  req.onreadystatechange = function() {
+	      if (req.readyState == 4 && req.status == 200)  
+	      { 
+// 	        alert(req.responseText); 
+	        document.getElementById("display").innerHTML = req.responseText;
+	      }        
+	  };  
+      } 
+      else alert("Браузер не поддерживает AJAX");
+      
+    function connect(){
+	  var strId = document.getElementById("login").value;
+	  send('selfiebotid=G'+strId);
+    }
+    function send(content){
+          req.open("POST", 'joystick.php', true);
+	  req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	  req.send(content+'&ajax=1');
+    }
+    </script>
 </head>
 
-<body>
 
-<html>
-<head>
-    <!--  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>-->
-</head>
 <body>
 <div id="connect_panel">
-    <input type="text" maxlength="9" name="login" placeholder="Login" />
-    <button id="connect" name="submit">Connect</button>
+    <input type="text" maxlength="9" id="login" placeholder="Login" />
+    <button id="connect" name="submit"  onClick="connect()">Connect</button>
 </div>
+
 <div id=joystick>
-    <button id="up">&#9650;</button>
+    <button id="up"  onmousedown="send('up')" onmouseup="send('stop')">&#9650;</button>
     <br>
-    <button id="left">&#9664;</button>
-    <button id="down" onClick="">&#9660;</button>
-    <button id="right">&#9654;</button>
-
+    <button id="left"  onmousedown="send('left')" onmouseup="send('stop')">&#9664;</button>
+    <button id="down" onmousedown="send('down')" onmouseup="send('stop')">&#9660;</button>
+    <button id="right"  onmousedown="send('right')" onmouseup="send('stop')">&#9654;</button>
 </div>
-</body>
-</html>
-
-
-
-
+<div id=display>
+  Display
+</div>
 
 </body>
 </html>
