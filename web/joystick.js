@@ -1,13 +1,4 @@
-<!DOCTYPE html>
-<html >
-<head>
-    <meta charset="UTF-8">
-    <title>Selfiebot controls</title>
-    <link rel="stylesheet" href="css/style.css">
-    <script type="text/javascript"
-            src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-    <script type="text/javascript" src="joystick.js">
-      var connected=false;
+ var connected=false;
       var req;
     
       if (window.XMLHttpRequest) req = new XMLHttpRequest(); 
@@ -51,7 +42,7 @@
       send("cmd="+cmd);
     }
     function send(content){
-          req.open("POST", 'selfiebot_test.php', true);
+          req.open("POST", 'joystick.php', true);
 	  req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 // 	req.setRequestHeader("Content-Type", "text/plain");
 	  req.send(content+'&ajax=1');
@@ -62,25 +53,3 @@
 	sendCmd('close');
       }
     }
-
-    </script>
-</head>
-<body >
-<div id="connect_panel">
-    <input type="text" maxlength="9" id="login" placeholder="Login" />
-    <button id="connect" onClick="connect()">Connect</button>
-</div>
-
-<div id=joystick>
-    <button id="up" class="control" onmousedown="sendCmd('up')" onmouseup="sendCmd('up')">&#9650;</button>
-    <br>
-    <button id="left" class="control" onmousedown="sendCmd('left')" onmouseup="sendCmd('left')">&#9664;</button>
-    <button id="down" class="control" onmousedown="sendCmd('down')" onmouseup="sendCmd('down')">&#9660;</button>
-    <button id="right" class="control" onmousedown="sendCmd('right')" onmouseup="sendCmd('right')">&#9654;</button>
-</div>
-<div id=display>
-  Display
-</div>
-
-</body>
-</html>
