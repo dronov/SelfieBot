@@ -2,6 +2,12 @@ apply plugin: 'com.android.application'
 
 android {
     signingConfigs {
+        config {
+            keyAlias 'endurancekey'
+            keyPassword 'IL15OHM.g'
+            storeFile file('/home/ilya/AndroidStudioProjects/keystores.jks')
+            storePassword 'IL15OHM.g'
+        }
     }
     compileSdkVersion 22
     buildToolsVersion "22.0.1"
@@ -14,8 +20,9 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
         }
     }
 }

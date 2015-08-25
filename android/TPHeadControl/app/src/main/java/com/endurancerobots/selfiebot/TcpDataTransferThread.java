@@ -1,13 +1,14 @@
 package com.endurancerobots.selfiebot;
 
 import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.Arrays;
 
 /**
  * Created by ilya on 23.07.15.
@@ -15,9 +16,9 @@ import java.util.Arrays;
 public class TcpDataTransferThread extends Thread {
 
     public static final int MESSAGE_READ = 10;
+    public static final int MESSAGE_READ_ANS = 20;
 
     public static final int CONNECTION_INFO = 20;
-
     public static final int CLOSE_CONNECTION = 113;
     public static final int MESSAGE_WRITE = 30;
     public static final int BY_CLIENT = 1007;
@@ -32,6 +33,8 @@ public class TcpDataTransferThread extends Thread {
     Handler mInHandler;   // TODO: 05.08.15 сделать обратную связь
     static int numOfThreads = 0;
     private String TAG = "TcpDataTransferThread";
+    public static final String ECHO_TAG = "echo:";
+    private boolean feedEnabled=false;
 
     public TcpDataTransferThread(Socket socket) throws NullPointerException {
         numOfThreads++;
@@ -57,7 +60,7 @@ public class TcpDataTransferThread extends Thread {
 //            public void handleMessage(Message msg) {
 //                super.handleMessage(msg);
 //                switch (msg.what){
-//                    case BtDataTransferThread.MESSAGE_READ:
+//                    case BtDataTransferThread.MESSAGE_RECIEVED:
 //                        try {
 //                            write((byte[])msg.obj);
 //                        } catch (IOException e) {
@@ -70,6 +73,8 @@ public class TcpDataTransferThread extends Thread {
 //                }
 //            }
 //        };
+//        Looper.prepare();
+
     }
 
     public void run() {
@@ -83,19 +88,20 @@ public class TcpDataTransferThread extends Thread {
             try {
                 bytes = mmInStream.read(buffer);
                 Log.v(TAG, "read " + bytes + " bytes:" + new String(buffer, 0, bytes));
-
                 if(buffer[0]==113){
                     if (mControl != null) {
                         mControl.obtainMessage(CLOSE_CONNECTION, BY_CLIENT,0).sendToTarget();
                         Log.i(TAG, "Client wants to close connection. I'll send msg to service");
-                        interrupt();
                     }else Log.w(TAG,"Oops, mControl handler is null");
+                    interrupt();
                 }
-                if(mData != null) {
-                    byte[] msg = new byte[bytes];
-                    System.arraycopy(buffer,0,msg,0,bytes);
-                    mData.obtainMessage(MESSAGE_READ, bytes, -1, msg).sendToTarget();
-                }
+                sendDataToService(MESSAGE_READ, buffer, bytes);
+//                if(new String(buffer).contains(ECHO_TAG)){
+////                    sendDataToService(MESSAGE_READ_ANS, buffer, bytes);
+//                }else
+//                {
+//                    sendEchoMsg(buffer);
+//                }
             } catch (IOException e) {
                 Log.e(TAG,e.getMessage());
                 if (mControl != null) {
@@ -116,6 +122,18 @@ public class TcpDataTransferThread extends Thread {
             Log.i(TAG,"Streams closed");
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void sendEchoMsg(byte[] buffer) throws IOException {
+        write((ECHO_TAG + new String(buffer)).getBytes());
+    }
+
+    private void sendDataToService(int messageType, byte[] buffer, int bytes) {
+        if(mData != null) {
+            byte[] msg = new byte[bytes];
+            System.arraycopy(buffer,0,msg,0,bytes);
+            mData.obtainMessage(MESSAGE_READ, bytes, -1, msg).sendToTarget();
         }
     }
 
@@ -150,8 +168,12 @@ public class TcpDataTransferThread extends Thread {
         return mmSocket;
     }
 
-// TODO: 05.08.15 сделать обратную связь
-//    public Handler getInHandler() {
-//        return mInHandler;
-//    }
+    public void setFeedEnabled(boolean feedEnabled) {
+        this.feedEnabled = feedEnabled;
+    }
+
+    // TODO: 05.08.15 сделать обратную связь
+    public Handler getInHandler() {
+        return mInHandler;
+    }
 }

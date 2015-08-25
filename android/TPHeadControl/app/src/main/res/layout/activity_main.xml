@@ -57,6 +57,13 @@
             android:onClick="makeServerOnClick"
             android:id="@+id/makeServer"
             />
+        <!--<Button-->
+            <!--android:layout_width="fill_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="@string/follow_me"-->
+            <!--android:onClick="startFaceTracking"-->
+            <!--android:id="@+id/FaceTracking"-->
+            <!--/>-->
     </LinearLayout>
 
     <ProgressBar

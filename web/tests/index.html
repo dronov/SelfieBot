@@ -10,18 +10,18 @@
      
     </script>
 </head>
-<body>
+<body >
 <div id="connect_panel">
     <input type="text" maxlength="9" id="login" placeholder="Login" />
     <button id="connect" onClick="connect()">Connect</button>
 </div>
 
 <div id=joystick>
-    <button id="up" class="control" >&#9650;</button>
+    <button id="up" class="control" onmousedown="sendCmd('up')" onmouseup="sendCmd('up')">&#9650;</button>
     <br>
-    <button id="left" class="control">&#9664;</button>
-    <button id="down" class="control">&#9660;</button>
-    <button id="right" class="control">&#9654;</button>
+    <button id="left" class="control" onmousedown="sendCmd('left')" onmouseup="sendCmd('left')">&#9664;</button>
+    <button id="down" class="control" onmousedown="sendCmd('down')" onmouseup="sendCmd('down')">&#9660;</button>
+    <button id="right" class="control" onmousedown="sendCmd('right')" onmouseup="sendCmd('right')">&#9654;</button>
 </div>
 <div id=display>
   Display

@@ -20,7 +20,8 @@ public class BtDataTransferThread extends Thread {
     public static final int MESSAGE_READ = 1;
     public static final int CONNECTION_INFO = 2;
     public static final int READING_FAILED = 3;
-    private static final int MESSAGE_WRITE = 4;
+    public static final int MESSAGE_WRITE = 4;
+    public static final int MESSAGE_RECIEVED = 5;
     private final BluetoothSocket mmSocket;
     private final InputStream mmInStream;
     private final OutputStream mmOutStream;
@@ -58,6 +59,7 @@ public class BtDataTransferThread extends Thread {
                     case TcpDataTransferThread.MESSAGE_READ:
                         try {
                             write((byte[])msg.obj);
+//                            mOutHandler.obtainMessage(MESSAGE_RECIEVED,msg.obj);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -80,7 +82,7 @@ public class BtDataTransferThread extends Thread {
         // Keep listening to the InputStream until an exception occurs
 
                     // TODO: 05.08.15 сделать обратную связь
-            while (isRunning) {
+            while (!isInterrupted()) {
 //                try {
 //                    bytes = mmInStream.read(buffer);
 //                    System.arraycopy(buffer, 0, pack, packCurrentLen, bytes);
@@ -131,7 +133,7 @@ public class BtDataTransferThread extends Thread {
 
     /* Call this from the main activity to shutdown the connection */
     public void cancel() {
-        isRunning=false;
+        interrupt();
         try {
             mmSocket.close();
         } catch (IOException e) {Log.e(TAG, e.getMessage());}

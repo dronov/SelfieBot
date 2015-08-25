@@ -3,18 +3,23 @@ package com.endurancerobots.selfiebot;
 import android.app.Activity;
 //import android.app.FragmentManager;
 import android.app.PendingIntent;
+import android.content.Context;
+import android.content.IntentFilter;
 import android.graphics.Color;
-import android.support.v4.app.FragmentManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Build;
+import android.support.annotation.StringRes;
 import android.support.v4.app.FragmentActivity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -32,20 +37,67 @@ public class MainActivity extends FragmentActivity {
     public static final int SERVER_CONNECTED = 442;
     public static final String EXTRA_SERVER_PINTENT
             = "com.endurancerobots.selfiebot.extra.EXTRA_SERVER_PINTENT";
+    public static final String SERVO_CONTROL_IS_ALIFE
+            = "com.endurancerobots.selfiebot.SERVO_CONTROL_IS_ALIFE";
+    public static final String UI_CONTROL_IS_ALIFE
+            = "com.endurancerobots.selfiebot.UI_CONTROL_IS_ALIFE";
+    public static final String SERVO_CONTROL_STOPPED
+            = "com.endurancerobots.selfiebot.SERVO_CONTROL_STOPPED";
+    public static final String UI_CONTROL_STOPPED = "com.endurancerobots.selfiebot.UI_CONTROL_STOPPED";
 
-    private ArrayAdapter<String> mNewDevicesArrayAdapter;
-    private BluetoothAdapter mBtAdapter;
-    private BroadcastReceiver mReceiver;
     private String mMacAddr ="";
     private Intent mUiControlServiceIntent;
-    private boolean mBluetoothEnabled=true;
     private Intent mServoControlIntent=null;
     private int activityState;
+
+    private Button makeServerButton;
+    private Button connect2RobotButton;
+
+    public static final String MAIN_ACTIVITY_START
+            = "com.endurancerobots.selfiebot.MainActivity.START";
+    private final BroadcastReceiver br = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().equals(SERVO_CONTROL_IS_ALIFE)){
+                setBtnClick(makeServerButton, false, R.string.server_is_shared);
+            }else if(intent.getAction().equals(UI_CONTROL_IS_ALIFE)){
+                setBtnClick(connect2RobotButton, false, R.string.you_control_selfiebot);
+            }else if(intent.getAction().equals(SERVO_CONTROL_STOPPED)){
+                setBtnClick(makeServerButton, true, R.string.makeServer);
+            }else if(intent.getAction().equals(UI_CONTROL_STOPPED)){
+                setBtnClick(connect2RobotButton, true, R.string.connect2Robot);
+            }
+        }
+    };
+
+    private void setBtnClick(Button button, boolean b, @StringRes int resource) {
+        setBtnClick(button, b);
+        button.setText(resource);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        if(isInternetOn()) {
+            setContentView(R.layout.activity_main);
+            makeServerButton = (Button) findViewById(R.id.makeServer);
+            connect2RobotButton = (Button) findViewById(R.id.connect2Robot);
+            IntentFilter filter = new IntentFilter(SERVO_CONTROL_IS_ALIFE);
+            filter.addAction(UI_CONTROL_IS_ALIFE);
+            registerReceiver(br, filter);
+        }else
+        {
+            Toast.makeText(getApplicationContext(),getString(R.string.connect_to_internet),
+                    Toast.LENGTH_LONG).show();
+            finish();
+        }
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        sendBroadcast(new Intent(MAIN_ACTIVITY_START));
     }
 
     @Override
@@ -66,10 +118,13 @@ public class MainActivity extends FragmentActivity {
 //        if (id == R.id.action_settings) {
 //            return true;
 //        }else
-        if (id == R.id.exit) {
+        if (id == R.id.stop_services) {
             if(mUiControlServiceIntent !=null) stopService(mUiControlServiceIntent);
-            if(mServoControlIntent!=null) stopService(mServoControlIntent);
-            finish();
+            else Toast.makeText(getApplicationContext(), R.string.unable_close_ui,
+                    Toast.LENGTH_LONG).show();
+            if(mServoControlIntent!=null)stopService(mServoControlIntent);
+            else Toast.makeText(getApplicationContext(), R.string.unable_close_server,
+                        Toast.LENGTH_LONG).show();
             return true;
         }else if(id == R.id.about) {
             startActivity(new Intent(getApplicationContext(), AboutActivity.class));
@@ -82,18 +137,40 @@ public class MainActivity extends FragmentActivity {
         setBluetoothOn();
     }
 
+    private boolean isInternetOn() {
+            ConnectivityManager connectivity = (ConnectivityManager) getApplicationContext()
+                    .getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (connectivity != null) {
+                NetworkInfo[] info = connectivity.getAllNetworkInfo();
+                if (info != null) {
+                    for (int i = 0; i < info.length; i++) {
+                        Log.w("INTERNET:",String.valueOf(i));
+                        if (info[i].getState() == NetworkInfo.State.CONNECTED) {
+                            Log.w("INTERNET:", "connected!");
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
 
     public void connect2RobotOnClick(View view) {
         Log.i(TAG, "connect2RobotOnClick pressed");
-
-        PendingIntent pendingIntent;
-        mUiControlServiceIntent = new Intent(this, UiControlService.class);
-        pendingIntent = createPendingResult(CLIENT_CONNECTED_CODE,new Intent(),0);
-        mUiControlServiceIntent
-                .setAction(UiControlService.ACTION_START_CONTROLS)
-                .putExtra(UiControlService.EXTRA_HEAD_ID, getHeadId())
-                .putExtra(UiControlService.EXTRA_PENDING_INTENT,pendingIntent);
-        startService(mUiControlServiceIntent);
+        if(isInternetOn()) {
+            PendingIntent pendingIntent;
+            mUiControlServiceIntent = new Intent(this, UiControlService.class);
+            pendingIntent = createPendingResult(CLIENT_CONNECTED_CODE, new Intent(), 0);
+            mUiControlServiceIntent
+                    .setAction(UiControlService.ACTION_START_CONTROLS)
+                    .putExtra(UiControlService.EXTRA_HEAD_ID, getHeadId())
+                    .putExtra(UiControlService.EXTRA_PENDING_INTENT, pendingIntent);
+            startService(mUiControlServiceIntent);
+        }else {
+            Toast.makeText(getApplicationContext(), R.string.connect_to_internet,
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
     private String getMac(){
@@ -157,14 +234,9 @@ public class MainActivity extends FragmentActivity {
                     case CLIENT_START_CONNECTION:
                         ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar);
                         pb.setVisibility(View.VISIBLE);
-                        Button makeServerButton = (Button) findViewById(R.id.makeServer);
-                        Button connect2RobotButton = (Button) findViewById(R.id.connect2Robot);
-                        makeServerButton.setClickable(false);
-                        makeServerButton.setTextColor(Color.GRAY);
 
-                        connect2RobotButton.setClickable(false);
-                        connect2RobotButton.setTextColor(Color.GRAY);
-
+                        setBtnClick(makeServerButton, false);
+                        setBtnClick(connect2RobotButton, false);
                         activityState = CLIENT_START_CONNECTION;
                         Log.i(TAG, "CLIENT_START_CONNECTION");
                         break;
@@ -172,11 +244,9 @@ public class MainActivity extends FragmentActivity {
                         activityState = CLIENT_CONNECTED;
                         pb = (ProgressBar) findViewById(R.id.progressBar);
                         pb.setVisibility(View.INVISIBLE);
-                        makeServerButton = (Button) findViewById(R.id.makeServer);
-                        makeServerButton.setClickable(true);
-                        makeServerButton.setTextColor(Color.BLACK);
+                        setBtnClick(makeServerButton, true);
 
-//                        finish();
+                        finish();
                         Log.i(TAG, "CLIENT_CONNECTED");
                         break;
                 }
@@ -185,13 +255,7 @@ public class MainActivity extends FragmentActivity {
                 Log.i(TAG,"CLIENT_CONNECTED_CODE");
                 switch (resultCode) {
                     case SERVER_START_CONNECTION:
-
-                        Button makeServerButton = (Button) findViewById(R.id.makeServer);
-                        Button connect2RobotButton = (Button) findViewById(R.id.connect2Robot);
-                        makeServerButton.setClickable(false);
-                        makeServerButton.setTextColor(Color.GRAY);
-
-
+                        setBtnClick(makeServerButton, false);
                         Log.i(TAG, "SERVER_START_CONNECTION");
                         break;
                     case SERVER_CONNECTED:
@@ -201,6 +265,16 @@ public class MainActivity extends FragmentActivity {
                         break;
                 }
                 break;
+        }
+    }
+
+    private void setBtnClick(Button button, boolean clickable) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            button.setActivated(clickable);
+        }else{
+            button.setClickable(clickable);
+            if(clickable) button.setTextColor(Color.BLACK);
+            else button.setTextColor(Color.GRAY);
         }
     }
 
@@ -236,6 +310,7 @@ public class MainActivity extends FragmentActivity {
             Log.i(TAG, "activityState==CLIENT_START_CONNECTION");
 //            stopService(mUiControlServiceIntent);
         }
+        unregisterReceiver(br);
         super.onDestroy();
     }
 

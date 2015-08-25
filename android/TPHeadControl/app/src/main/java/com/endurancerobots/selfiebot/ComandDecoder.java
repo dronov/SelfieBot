@@ -5,7 +5,7 @@ package com.endurancerobots.selfiebot;
  */
 public class ComandDecoder {
     static public String decode(byte[] cmd) {
-        switch (cmd[0]){
+        switch (cmd[TcpDataTransferThread.ECHO_TAG.length()]){
             case 119:
                 return ("Command: UP (" + cmd[0] + ")");
             case 97:

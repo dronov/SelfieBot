@@ -72,4 +72,10 @@
     <string name="connection_closed_by_client">Connection closed by client</string>
     <string name="connection_closed_by_error">Error occures. Connection closed</string>
     <string name="wait_for_another_connection">Waiting for another connection</string>
+    <string name="follow_me" translatable="false">Follow Me</string>
+    <string name="connect_to_internet">Please connect to internet</string>
+    <string name="you_control_selfiebot">You control SelfieBot</string>
+    <string name="server_is_shared">Server is shared</string>
+    <string name="unable_close_server">Unable to close SelfieBot server</string>
+    <string name="unable_close_ui">Unable to close Ui control service</string>
 </resources>

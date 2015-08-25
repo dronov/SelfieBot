@@ -3,7 +3,10 @@ package com.endurancerobots.selfiebot;
 
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -56,16 +59,26 @@ public class UiControlService extends Service {
     private float mYDelta;
     private String mHeadId = "987654321";
 
-    private TcpDataTransferThread tcpDataTransferThread;
+    private TcpDataTransferThread mDataTransfer;
 
     private static final String TAG = "UiControlService";
     private boolean waitForIp=true;
     private PendingIntent pendingIntent;
+    private final BroadcastReceiver br = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().equals(MainActivity.MAIN_ACTIVITY_START)){
+                sendBroadcast(new Intent(MainActivity.UI_CONTROL_IS_ALIFE));
+            }
+        }
+    };
 
 
     @Override
     public void onCreate() {
         super.onCreate();
+        IntentFilter intentFilter = new IntentFilter(MainActivity.MAIN_ACTIVITY_START);
+        registerReceiver(br,intentFilter);
     }
 
     @Override
@@ -85,7 +98,7 @@ public class UiControlService extends Service {
                     public void handleMessage(Message msg) {
                         super.handleMessage(msg);
                         switch (msg.what) {
-                            case TcpDataTransferThread.MESSAGE_READ:
+                            case TcpDataTransferThread.MESSAGE_READ_ANS:
                                 Log.i(TAG, "sDataHandler got message: " + msg.arg1 + " "
                                         + msg.arg2 + " " + Arrays.toString(((byte[]) msg.obj)));
                                 setInfo(ComandDecoder.decode((byte[]) msg.obj));
@@ -96,10 +109,11 @@ public class UiControlService extends Service {
                                 setupLayout();
                                 setupClicks();
                                 setInfo(getString(R.string.successful_connection));
-                                tcpDataTransferThread = new TcpDataTransferThread((Socket) msg.obj);
-                                tcpDataTransferThread.setOutDataHandler(sHandler);
-                                tcpDataTransferThread.setName("Client");
-                                tcpDataTransferThread.start();
+                                mDataTransfer = new TcpDataTransferThread((Socket) msg.obj);
+                                mDataTransfer.setOutDataHandler(sHandler);
+                                mDataTransfer.setName("Client");
+                                mDataTransfer.setFeedEnabled(true);
+                                mDataTransfer.start();
 
                                 try {pendingIntent.send(MainActivity.CLIENT_CONNECTED);}
                                 catch (PendingIntent.CanceledException e) {e.printStackTrace();}
@@ -136,7 +150,7 @@ public class UiControlService extends Service {
         TcpDataTransferThread newTrans = new TcpDataTransferThread(socket);
         newTrans.setOutDataHandler(sHandler);
         newTrans.start();
-        tcpDataTransferThread = newTrans;
+        mDataTransfer = newTrans;
     }
 
 
@@ -375,7 +389,7 @@ public class UiControlService extends Service {
     }
     private void writeCmd(byte[] cmd) {
         try {
-            tcpDataTransferThread.write(cmd);
+            mDataTransfer.write(cmd);
         } catch (IOException e) {
 
             e.printStackTrace();
@@ -408,7 +422,9 @@ public class UiControlService extends Service {
         }
         Log.i(TAG, "Connection closed");
         if(mConnector !=null) mConnector.cancel();
-        if(tcpDataTransferThread!=null)tcpDataTransferThread.cancel();
+        if(mDataTransfer !=null) mDataTransfer.cancel();
+        sendBroadcast(new Intent(MainActivity.UI_CONTROL_STOPPED));
+        unregisterReceiver(br);
         super.onDestroy();
     }
 }

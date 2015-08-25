@@ -74,6 +74,9 @@ public class P2PConnector extends Thread {
                     if (!inetAddress.isLoopbackAddress()) {
                         Log.i(TAG, "My IP:"+inetAddress.getHostAddress());
                         return inetAddress.getHostAddress();
+                    }else
+                    {
+                        Log.i(TAG, "My IP:"+inetAddress.getHostAddress());
                     }
                 }
             }

@@ -40,22 +40,12 @@ if (req) {
 } 
 else alert("Браузер не поддерживает AJAX");
 
-var strId = '987654321';
 function connect(){
   if(connected===false){
-    strId = document.getElementById("login").value;
-    
-    connectReq.open("POST", 'socket_holder.php', true);
-    connectReq.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    connectReq.send('selfiebotid=G'+strId+'&ajax=1');
-    
+    var strId = document.getElementById("login").value;
+    send('selfiebotid=G'+strId);
     document.getElementById("connect").innerHTML ="Disconnect";
     connected=true;
-    
-    document.getElementById("up").onclick=function(){sendCmd("wwwww");};
-    document.getElementById("down").onclick=function(){sendCmd("sssss");};
-    document.getElementById("left").onclick=function(){sendCmd("aaaaa");};
-    document.getElementById("right").onclick=function(){sendCmd("ddddd");};
    }else{
     closeSocket();
     document.getElementById("connect").innerHTML ="Connect";
@@ -63,16 +53,20 @@ function connect(){
    }
 }
 function sendCmd(cmd){
-//   if(connected){
-    req.open("POST", 'joystick.php', true);
-    req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    req.send('cmd='+cmd+'&selfiebotid=G'+strId+'&ajax=1');
-//   }else{
-//     alert("Connect to SelfieBot, please.");
-//   }
+  req.open("POST", 'joystick.php', true);
+  req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+// 	req.setRequestHeader("Content-Type", "text/plain");
+  req.send('cmd='+cmd+'&ajax=1');
 }
+function send(content){
+  connectReq.open("POST", 'socket_holder.php', true);
+  connectReq.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+// 	req.setRequestHeader("Content-Type", "text/plain");
+  connectReq.send(content+'&ajax=1');
+}
+
 function closeSocket(){
   if(confirm("Do you want to disconnect from Selfiebot?")){
-    sendCmd("qqqqq");
+    sendCmd('close');
   }
 }

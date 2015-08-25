@@ -1,0 +1,43 @@
+    <!DOCTYPE html>   
+    <html lang="en">   
+    <head>   
+    <meta charset="utf-8">   
+    <title>Send request and receive response using XML</title>   
+    <meta name="description" content="HTML and JavaScript code of example of sending and receiving data using XML">   
+    <link href="../includes/bootstrap.css" rel="stylesheet">  
+        <script type="text/javascript">
+        
+function Endorser() {  
+   
+      
+    //creating XMLhttpRequest object  
+     var xhr;  
+         if (window.XMLHttpRequest) { // Mozilla, Safari, ...  
+        xhr = new XMLHttpRequest();  
+    } else if (window.ActiveXObject) { // IE 8 and older  
+        xhr = new ActiveXObject("Microsoft.XMLHTTP");  
+    }  
+      
+    //creating the xml string  
+        xmlString = "info";  
+      
+    //alert(data);  
+      // Build the URL to connect to  
+      var url = "save-userinfo.php";  
+      
+      // Open a connection to the server  
+      xhr.open("POST", url, true);  
+      
+      // declaring that the data being sent is in XML format  
+      xhr.setRequestHeader("Content-Type", "text/xml");  
+      
+      // Send the request  
+      xhr.send(xmlString);  
+    } 
+</script>
+    </head>  
+    <body>  
+    
+    <button onClick="Endorser()">Submit</button>   
+    </body>  
+    </html>  

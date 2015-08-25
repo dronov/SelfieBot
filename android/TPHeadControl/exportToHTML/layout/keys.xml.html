@@ -1,0 +1,95 @@
+<html>
+<head>
+<title>keys.xml</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.ln { color: rgb(0,0,0); font-weight: normal; font-style: normal; }
+.s0 { color: rgb(232,191,106); }
+.s1 { color: rgb(186,186,186); }
+.s2 { color: rgb(165,194,97); }
+.s3 { color: rgb(169,183,198); }
+</style>
+</head>
+<BODY BGCOLOR="#2b2b2b">
+<TABLE CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#C0C0C0" >
+<TR><TD><CENTER>
+<FONT FACE="Arial, Helvetica" COLOR="#000000">
+keys.xml</FONT>
+</center></TD></TR></TABLE>
+<pre>
+
+<span class="s0">&lt;?</span><span class="s1">xml version=</span><span class="s2">&quot;1.0&quot; </span><span class="s1">encoding=</span><span class="s2">&quot;utf-8&quot;</span><span class="s0">?&gt;</span><span class="s3"> 
+</span><span class="s0">&lt;FrameLayout </span><span class="s1">xmlns:android=</span><span class="s2">&quot;http://schemas.android.com/apk/res/android&quot;</span><span class="s0"> 
+    </span><span class="s1">android:layout_width=</span><span class="s2">&quot;@dimen/controls_width&quot; </span><span class="s1">android:layout_height=</span><span class="s2">&quot;@dimen/controls_height&quot;</span><span class="s0"> 
+    </span><span class="s1">android:theme=</span><span class="s2">&quot;@style/KeyControlsTheme&quot;</span><span class="s0"> 
+    </span><span class="s1">android:longClickable=</span><span class="s2">&quot;true&quot;</span><span class="s0">&gt;</span><span class="s3"> 
+ 
+    </span><span class="s0">&lt;FrameLayout 
+        </span><span class="s1">android:layout_width=</span><span class="s2">&quot;wrap_content&quot;</span><span class="s0"> 
+        </span><span class="s1">android:layout_height=</span><span class="s2">&quot;wrap_content&quot;</span><span class="s0">&gt;</span><span class="s3"> 
+ 
+        </span><span class="s0">&lt;Button 
+            </span><span class="s1">style=</span><span class="s2">&quot;?android:attr/buttonStyleSmall&quot;</span><span class="s0"> 
+            </span><span class="s1">android:layout_width=</span><span class="s2">&quot;@dimen/smallButton&quot;</span><span class="s0"> 
+            </span><span class="s1">android:layout_height=</span><span class="s2">&quot;@dimen/smallButton&quot;</span><span class="s0"> 
+            </span><span class="s1">android:text=</span><span class="s2">&quot;-&quot;</span><span class="s0"> 
+            </span><span class="s1">android:id=</span><span class="s2">&quot;@+id/bPause&quot;</span><span class="s0"> 
+            </span><span class="s1">android:layout_gravity=</span><span class="s2">&quot;left|top&quot;</span><span class="s0"> 
+            </span><span class="s1">android:background=</span><span class="s2">&quot;@drawable/dot_white&quot; </span><span class="s0">/&gt;</span><span class="s3"> 
+    </span><span class="s0">&lt;/FrameLayout&gt;</span><span class="s3"> 
+ 
+    </span><span class="s0">&lt;FrameLayout 
+        </span><span class="s1">android:layout_width=</span><span class="s2">&quot;fill_parent&quot;</span><span class="s0"> 
+        </span><span class="s1">android:layout_height=</span><span class="s2">&quot;fill_parent&quot;</span><span class="s0"> 
+        </span><span class="s1">android:id=</span><span class="s2">&quot;@+id/controlButtons&quot;</span><span class="s0"> 
+        </span><span class="s1">android:layout_gravity=</span><span class="s2">&quot;right|bottom&quot;</span><span class="s0">&gt;</span><span class="s3"> 
+ 
+        </span><span class="s0">&lt;Button 
+            </span><span class="s1">android:layout_width=</span><span class="s2">&quot;@dimen/button_width&quot;</span><span class="s0"> 
+            </span><span class="s1">android:layout_height=</span><span class="s2">&quot;@dimen/button_height&quot;</span><span class="s0"> 
+            </span><span class="s1">android:id=</span><span class="s2">&quot;@+id/bDown&quot;</span><span class="s0"> 
+            </span><span class="s1">android:layout_gravity=</span><span class="s2">&quot;center_horizontal|bottom&quot;</span><span class="s0"> 
+            </span><span class="s1">android:background=</span><span class="s2">&quot;@drawable/arrow_white_down&quot; </span><span class="s0">/&gt;</span><span class="s3"> 
+ 
+        </span><span class="s0">&lt;Button 
+            </span><span class="s1">android:layout_width=</span><span class="s2">&quot;@dimen/button_width&quot;</span><span class="s0"> 
+            </span><span class="s1">android:layout_height=</span><span class="s2">&quot;@dimen/button_height&quot;</span><span class="s0"> 
+            </span><span class="s1">android:id=</span><span class="s2">&quot;@+id/bLeft&quot;</span><span class="s0"> 
+            </span><span class="s1">android:layout_gravity=</span><span class="s2">&quot;left|bottom&quot;</span><span class="s0"> 
+            </span><span class="s1">android:background=</span><span class="s2">&quot;@drawable/arrow_white_left&quot; </span><span class="s0">/&gt;</span><span class="s3"> 
+ 
+        </span><span class="s0">&lt;Button 
+            </span><span class="s1">android:layout_width=</span><span class="s2">&quot;@dimen/button_width&quot;</span><span class="s0"> 
+            </span><span class="s1">android:layout_height=</span><span class="s2">&quot;@dimen/button_height&quot;</span><span class="s0"> 
+            </span><span class="s1">android:id=</span><span class="s2">&quot;@+id/bRight&quot;</span><span class="s0"> 
+            </span><span class="s1">android:layout_gravity=</span><span class="s2">&quot;right|bottom&quot;</span><span class="s0"> 
+            </span><span class="s1">android:background=</span><span class="s2">&quot;@drawable/arrow_white_right&quot; </span><span class="s0">/&gt;</span><span class="s3"> 
+ 
+        </span><span class="s0">&lt;Button 
+            </span><span class="s1">android:layout_width=</span><span class="s2">&quot;@dimen/button_width&quot;</span><span class="s0"> 
+            </span><span class="s1">android:layout_height=</span><span class="s2">&quot;@dimen/button_height&quot;</span><span class="s0"> 
+            </span><span class="s1">android:id=</span><span class="s2">&quot;@+id/bUp&quot;</span><span class="s0"> 
+            </span><span class="s1">android:layout_gravity=</span><span class="s2">&quot;center&quot;</span><span class="s0"> 
+            </span><span class="s1">android:background=</span><span class="s2">&quot;@drawable/arrow_white_up&quot; </span><span class="s0">/&gt;</span><span class="s3"> 
+ 
+        </span><span class="s0">&lt;Button 
+            </span><span class="s1">style=</span><span class="s2">&quot;?android:attr/buttonStyleSmall&quot;</span><span class="s0"> 
+            </span><span class="s1">android:layout_width=</span><span class="s2">&quot;@dimen/smallButton&quot;</span><span class="s0"> 
+            </span><span class="s1">android:layout_height=</span><span class="s2">&quot;@dimen/smallButton&quot;</span><span class="s0"> 
+            </span><span class="s1">android:text=</span><span class="s2">&quot;X&quot;</span><span class="s0"> 
+            </span><span class="s1">android:id=</span><span class="s2">&quot;@+id/bClose&quot;</span><span class="s0"> 
+            </span><span class="s1">android:layout_gravity=</span><span class="s2">&quot;right|top&quot;</span><span class="s0"> 
+            </span><span class="s1">android:background=</span><span class="s2">&quot;@drawable/dot_white&quot; </span><span class="s0">/&gt;</span><span class="s3"> 
+ 
+        </span><span class="s0">&lt;TextView 
+            </span><span class="s1">android:layout_width=</span><span class="s2">&quot;@dimen/cmd_debug_width&quot;</span><span class="s0"> 
+            </span><span class="s1">android:layout_height=</span><span class="s2">&quot;wrap_content&quot;</span><span class="s0"> 
+            </span><span class="s1">android:text=</span><span class="s2">&quot;control&quot;</span><span class="s0"> 
+            </span><span class="s1">android:id=</span><span class="s2">&quot;@+id/cmdDebug&quot;</span><span class="s0"> 
+            </span><span class="s1">android:layout_gravity=</span><span class="s2">&quot;center_horizontal|top&quot; </span><span class="s0">/&gt;</span><span class="s3"> 
+ 
+    </span><span class="s0">&lt;/FrameLayout&gt;</span><span class="s3"> 
+ 
+</span><span class="s0">&lt;/FrameLayout&gt;</span></pre>
+</body>
+</html>

@@ -64,5 +64,9 @@
     <string name="no_face_detect">Устройство не поддерживает распознавание лиц</string>
     <string name="downloadLastRelease"><a href="https://github.com/deadtr/SelfieBot/wiki/Install">Скачать последнюю версию</a></string>
     <string name="updateApp">Обновить приложение</string>
+    <string name="connection_closed_by_client">Соединение разорвано клиентом</string>
+    <string name="connection_closed_by_error">Возникли ошибки. Соединение разорвано</string>
+    <string name="wait_for_another_connection">Ожидание следующего подключения</string>
+    <string name="connect_to_internet">Необходимо соединение с интернетом</string>
 
 </resources>
