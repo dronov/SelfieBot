@@ -19,6 +19,7 @@ if(isset($_POST['selfiebotid'])){
       echo "Connection successful\n";
     }
 
+    
 
   
     echo "\nMsg to server: $idStr\n";
@@ -28,7 +29,7 @@ if(isset($_POST['selfiebotid'])){
     
     $msg='';
     $cnt=0;
-    $key_t = msg_get_queue(ftok("msg_queue.stat", 'R'),0666 | IPC_CREAT);
+    $key_t = msg_get_queue(ftok("msg_queue_$idStr.stat", 'R'),0666 | IPC_CREAT);
     while((strcmp($msg,"qqqqq")==0)===false){
       if (msg_receive($key_t, 1, $msg_type, 15, $msg, true, 0, $msg_error)) {
 // 	 echo "got msg$cnt:$msg";
